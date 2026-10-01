@@ -1,12 +1,12 @@
 # Leech UI Library
 
-A dark, purple-accented Roblox UI library inspired by the **Leech** interface style.
+A reusable Roblox UI library extracted from the **actual Leech HUD code** used in `Leech_Combat.lua`.
 
-Leech UI is focused on a compact sidebar layout, numbered navigation, level-based sections, a bottom runtime/status strip, and a clean monospace aesthetic. This repository contains the UI framework only; game-specific automation or combat logic is not included.
+This repository now reuses the original Leech interface implementation rather than approximating the screenshot. The palette, 850×566 window, gothic background tracery, Antique headings, sidebar placement, content coordinates, cards, toggle buttons, scrolling pages, drag behavior, responsive `UIScale`, footer format, and F6/F9/RightShift hotkeys are based directly on the original HUD.
 
 ---
 
-## Loading the Library
+## Loading
 
 ```lua
 local Leech = loadstring(game:HttpGet(
@@ -14,9 +14,7 @@ local Leech = loadstring(game:HttpGet(
 ))()
 ```
 
----
-
-## Quick Start
+## Quick start
 
 ```lua
 local Leech = loadstring(game:HttpGet(
@@ -24,239 +22,264 @@ local Leech = loadstring(game:HttpGet(
 ))()
 
 local Window = Leech:CreateWindow({
-    Title = "Leech",
-    SubTitle = "DEEPWOKEN",
+    Title = "LEECH",
+    SubTitle = "D E E P W O K E N",
     CurrentPage = "COMBAT",
     ProductName = "LEECH",
 })
 
 local Combat = Window:CreateTab({
     Title = "Combat",
-    Index = "01",
+    Index = 1,
 })
 
 local Parry = Combat:CreateSection({
-    Title = "AUTOPARRY",
+    Title = "Autoparry",
     Level = 1,
-    Description = "Base autoparry uses attack timings and range.",
+    Description = "Base autoparry uses attack timings and range. Prediction levels below add validation.",
 })
 
 Parry:CreateToggle({
     Title = "Autoparry",
     Default = true,
-    Callback = function(Value)
-        print("Autoparry:", Value)
+    Callback = function(value)
+        print("Autoparry:", value)
     end,
 })
 ```
 
 ---
 
-## `Leech:CreateWindow(Cfg)`
+## Original Leech details preserved
 
-Creates the main Leech window and returns a **WindowObj**.
-
-| Field | Type | Default | Description |
-|---|---|---:|---|
-| `Title` | string | `"Leech"` | Main title in the top-left |
-| `SubTitle` | string | `"DEEPWOKEN"` | Small spaced subtitle |
-| `CurrentPage` | string | `"HOME"` | Initial breadcrumb page label |
-| `ProductName` | string | `"LEECH"` | Breadcrumb product label |
-| `Width` | number | `840` | Window width |
-| `Height` | number | `560` | Window height |
-| `ToggleKey` | KeyCode | `RightShift` | Hide/show key |
-| `PauseKey` | KeyCode | `F6` | Pause/resume key |
-| `UnloadKey` | KeyCode | `F9` | Destroy UI key |
+The library keeps the HUD values from the original script:
 
 ```lua
-local Window = Leech:CreateWindow({
-    Title = "Leech",
-    SubTitle = "DEEPWOKEN",
-    CurrentPage = "COMBAT",
-    ProductName = "LEECH",
-    Width = 840,
-    Height = 560,
-})
+bg     = Color3.fromRGB(8, 7, 12)
+card   = Color3.fromRGB(18, 12, 25)
+line   = Color3.fromRGB(77, 48, 101)
+accent = Color3.fromRGB(145, 99, 182)
+bright = Color3.fromRGB(211, 187, 229)
+text   = Color3.fromRGB(234, 225, 237)
+muted  = Color3.fromRGB(167, 149, 179)
 ```
 
-### WindowObj Methods
+The original positions are also retained:
 
-#### `WindowObj:CreateTab(Cfg)`
+- Window: `850 × 566`
+- Content pages: `632 × 421` at `190, 64`
+- Sidebar tabs: `133 × 30` starting at `24, 107`
+- Sidebar spacing: `46 px`
+- Pause button: `24, 405`
+- Key hints: `24, 452`
+- Footer: `191, 495`
+- Close/minimize controls: original top-right positions
+- Responsive scaling formula from the original Leech HUD
 
-Creates a numbered sidebar tab.
+---
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `Title` | string | `"Tab"` | Sidebar label |
-| `Index` | string/number | automatic | Sidebar number |
+## Window API
+
+### `Leech:CreateWindow(Cfg)`
+
+| Field | Type | Default |
+|---|---|---|
+| `Title` | string | `"LEECH"` |
+| `SubTitle` | string | `"D E E P W O K E N"` |
+| `CurrentPage` | string | `"COMBAT"` |
+| `ProductName` | string | `"LEECH"` |
+| `Parent` | Instance | `LocalPlayer.PlayerGui` |
+| `PauseKey` | KeyCode | `F6` |
+| `UnloadKey` | KeyCode | `F9` |
+| `ToggleKey` | KeyCode | `RightShift` |
+| `OnPauseChanged` | function | optional |
+| `OnUnload` | function | optional |
+
+### Methods
+
+```lua
+Window:SetPaused(true)
+Window:SetVisible(true)
+Window:ToggleVisible()
+Window:SetStatus("Ready", "Second status line")
+Window:SetCounter("parry", 12)
+Window:SetCounter("dodge", 4)
+Window:SetCounter("filter", 19)
+Window:SetCounter("errors", 0)
+
+Window:SetFooter({
+    parry = 12,
+    dodge = 4,
+    filter = 19,
+    errors = 0,
+    line1 = "Ready",
+    line2 = "Runtime connected",
+})
+
+Window:Destroy()
+```
+
+---
+
+## Tabs
 
 ```lua
 local Combat = Window:CreateTab({
     Title = "Combat",
-    Index = "01",
+    Index = 1,
 })
 ```
 
-#### `WindowObj:SetPaused(Value)`
-
-Sets the paused state and updates the sidebar/runtime display.
+The common Leech sidebar can be reproduced with:
 
 ```lua
-Window:SetPaused(true)
-Window:SetPaused(false)
+local Tabs = {
+    Combat = Window:CreateTab({Title = "Combat", Index = 1}),
+    Breakers = Window:CreateTab({Title = "Breakers", Index = 2}),
+    Automation = Window:CreateTab({Title = "Automation", Index = 3}),
+    Targeting = Window:CreateTab({Title = "Targeting", Index = 4}),
+    Vision = Window:CreateTab({Title = "Vision", Index = 5}),
+    Settings = Window:CreateTab({Title = "Settings", Index = 6}),
+}
 ```
-
-#### `WindowObj:SetStatus(Text)`
-
-Changes the bottom-left runtime status text.
-
-```lua
-Window:SetStatus("Ready")
-```
-
-#### `WindowObj:SetCounter(Name, Value)`
-
-Updates one of the bottom counters. Counter names are case-insensitive.
-
-```lua
-Window:SetCounter("parry", 12)
-Window:SetCounter("dodge", 3)
-Window:SetCounter("filter", 42)
-Window:SetCounter("errors", 0)
-```
-
-#### `WindowObj:Destroy()`
-
-Completely removes the UI and disconnects library-owned connections.
 
 ---
 
-## `TabObj:CreateSection(Cfg)`
-
-Creates a bordered Leech-style section inside a tab.
-
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `Title` | string | `"SECTION"` | Section heading |
-| `Level` | number/string | `nil` | Optional `LEVEL N` label |
-| `Description` | string | `""` | Muted helper text |
+## Sections
 
 ```lua
-local Prediction = Combat:CreateSection({
-    Title = "AIR PREDICTION",
+local Air = Combat:CreateSection({
+    Title = "Air Prediction",
     Level = 2,
-    Description = "Uses normal game direction checks.",
+    Description = "Uses normal game direction checks. No AI runtime is needed for this level.",
 })
 ```
+
+A `Level` automatically renders as `TITLE · LEVEL N`, matching the old HUD.
 
 ---
 
 ## Components
 
-All components are created from a **SectionObj**.
+### Toggle
 
-### `SectionObj:CreateToggle(Cfg)`
+Uses the original Leech `● ON / ○ OFF / LOCKED` button design.
 
 ```lua
-local Toggle = Prediction:CreateToggle({
+local Toggle = Air:CreateToggle({
     Title = "Air Prediction",
     Default = true,
-    Callback = function(Value)
-        print(Value)
+    Callback = function(value)
+        print(value)
     end,
 })
 
 Toggle.Value:Set(false)
-Toggle.Name:Set("Prediction")
+print(Toggle.Value:Get())
 ```
 
-### `SectionObj:CreateSlider(Cfg)`
+Optional dependency:
 
 ```lua
-local Slider = Prediction:CreateSlider({
-    Title = "Facing enter angle",
+Visual:CreateToggle({
+    Title = "Visual Prediction",
+    Default = false,
+    Requirement = function()
+        return Toggle.Value:Get()
+    end,
+    OnLocked = function()
+        Window:SetStatus("Enable Air Prediction / Level 2 first")
+    end,
+    Callback = function(value)
+        print(value)
+    end,
+})
+```
+
+### Dropdown / cycle row
+
+The original Leech HUD used a full-width cycle button instead of a popup list. `CreateDropdown` intentionally preserves that interaction.
+
+```lua
+Section:CreateDropdown({
+    Title = "Mode",
+    Options = {"Standard", "Experimental", "Mira"},
+    Selected = {"Standard"},
+    Callback = function(selected)
+        print(selected[1])
+    end,
+})
+```
+
+### Input
+
+Uses the original right-side `TextBox` layout.
+
+```lua
+Section:CreateInput({
+    Title = "Maximum distance",
+    Default = 160,
+    Numeric = true,
+    Min = 0,
+    Max = 500,
+    Callback = function(value)
+        print(value)
+    end,
+})
+```
+
+### Slider
+
+The old Leech interface did not use draggable slider bars. To keep the same UI, `CreateSlider` uses the same numeric TextBox style as the original `edit()` control.
+
+```lua
+Section:CreateSlider({
+    Title = "Facing enter angle · degrees",
     Range = {0, 180},
     Default = 50,
-    Increment = 1,
-    Suffix = "°",
-    Callback = function(Value)
-        print(Value)
+    Callback = function(value)
+        print(value)
     end,
 })
-
-Slider.Value:Set(60)
 ```
 
-### `SectionObj:CreateDropdown(Cfg)`
-
-```lua
-local Dropdown = Prediction:CreateDropdown({
-    Title = "Mode",
-    Options = {"Balanced", "Strict", "Loose"},
-    Selected = {"Balanced"},
-    Multi = false,
-    Callback = function(Selected)
-        print(Selected[1])
-    end,
-})
-
-Dropdown.Options:Set({"Balanced", "Strict"})
-Dropdown.Value:Set("Strict")
-```
-
-### `SectionObj:CreateButton(Cfg)`
+### Button
 
 ```lua
 Section:CreateButton({
-    Title = "Reset counters",
+    Title = "Save settings",
     Callback = function()
-        Window:SetCounter("parry", 0)
-        Window:SetCounter("dodge", 0)
+        Window:SetStatus("Settings saved")
     end,
 })
 ```
 
-### `SectionObj:CreateLabel(Text)`
+### Label and paragraph
 
 ```lua
-local Label = Section:CreateLabel("Ready")
-Label.Value:Set("Running")
-```
+local Label = Section:CreateLabel("Runtime: OFFLINE")
+Label.Value:Set("Runtime: CONNECTED")
 
-### `SectionObj:CreateParagraph(Cfg)`
-
-```lua
 local Paragraph = Section:CreateParagraph({
-    Title = "About",
-    Content = "Leech UI uses a compact dark interface with purple accents.",
+    Title = "Status",
+    Content = "Reusable text content.",
 })
-
-Paragraph.Title:Set("Info")
-Paragraph.Content:Set("Updated text.")
 ```
 
 ---
 
-## Full Example
+## Hotkeys
 
-See [Example.lua](./Example.lua) for a complete showcase matching the Leech layout:
+- **F6** — pause / resume
+- **F9** — unload
+- **RightShift** — hide / show
 
-- 01 Combat
-- 02 Breakers
-- 03 Automation
-- 04 Targeting
-- 05 Vision
-- 06 Settings
-- F6 pause
-- F9 unload
-- RightShift hide
-- Bottom `PARRY / DODGE / FILTER / ERRORS` counters
+These are the same defaults as the original Leech script.
 
 ---
 
-## Notes
+## Example
 
-- The library is designed for executor environments that support `loadstring` and `game:HttpGet`.
-- It automatically prefers `gethui()` when available and otherwise falls back to `CoreGui`.
-- `ResetOnSpawn` is disabled.
-- This project is a UI framework. Connect component callbacks to your own logic.
+See [Example.lua](./Example.lua) for a full six-page setup using the original Leech UI code and layout.
+
+The repository contains the UI framework only. Feature callbacks are intentionally separate so the same interface can be reused by other scripts.
