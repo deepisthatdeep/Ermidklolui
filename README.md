@@ -114,6 +114,33 @@ There is deliberately no pause state, no `SetPaused`, and no F6 binding.
 
 ---
 
+
+## Linoria-style two-column layout
+
+Each selected sidebar tab now contains **two independent scrolling groupbox columns**, matching the layout shown in Linoria-style menus.
+
+Use `Position = "Left"` or `Position = "Right"` on a section:
+
+```lua
+local Main = General:CreateSection({
+    Title = "Main",
+    Position = "Left",
+})
+
+local Tuning = General:CreateSection({
+    Title = "Tuning",
+    Position = "Right",
+})
+
+Tuning:CreateSlider({
+    Title = "Strength",
+    Range = {0, 100},
+    Default = 50,
+})
+```
+
+`Side = 1/2` and `Column = 1/2` are also accepted. If no side is supplied, sections automatically alternate between the two columns. Convenience helpers are available as `Tab:CreateLeftSection(...)` and `Tab:CreateRightSection(...)`.
+
 ## Tabs
 
 ```lua
