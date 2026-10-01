@@ -43,8 +43,6 @@ local Settings = Window:CreateTab({
 })
 
 local GeneralSection = General:CreateSection({
-    Title = "General",
-    Description = "Primary feature controls.",
     Position = "Left",
 })
 
@@ -75,8 +73,6 @@ GeneralSection:CreateInput({
 })
 
 local GeneralTuning = General:CreateSection({
-    Title = "Feature Tuning",
-    Description = "Separate right-side groupbox for sliders and values.",
     Position = "Right",
 })
 
@@ -103,8 +99,6 @@ GeneralTuning:CreateSlider({
 })
 
 local PlayerSection = Player:CreateSection({
-    Title = "Movement",
-    Description = "Feature toggles.",
     Position = "Left",
 })
 
@@ -117,8 +111,6 @@ PlayerSection:CreateToggle({
 })
 
 local PlayerTuning = Player:CreateSection({
-    Title = "Movement Values",
-    Description = "Numeric tuning is kept in the right column.",
     Position = "Right",
 })
 
@@ -167,8 +159,7 @@ PlayerSection:CreateToggle({
 })
 
 local WorldSection = World:CreateSection({
-    Title = "World",
-    Description = "N/A",
+    Position = "Left",
 })
 
 WorldSection:CreateToggle({
@@ -206,8 +197,7 @@ WorldSection:CreateInput({
 })
 
 local VisualSection = Visuals:CreateSection({
-    Title = "Visuals",
-    Description = "N/A",
+    Position = "Left",
 })
 
 VisualSection:CreateToggle({
@@ -253,8 +243,7 @@ VisualSection:CreateSlider({
 })
 
 local MiscSection = Misc:CreateSection({
-    Title = "Miscellaneous",
-    Description = "N/A",
+    Position = "Left",
 })
 
 MiscSection:CreateToggle({
@@ -287,8 +276,6 @@ MiscSection:CreateParagraph({
 })
 
 local SettingsSection = Settings:CreateSection({
-    Title = "Settings",
-    Description = "General configuration.",
     Position = "Left",
 })
 
@@ -310,8 +297,6 @@ SettingsSection:CreateInput({
 })
 
 local ColorSection = Settings:CreateSection({
-    Title = "Colors",
-    Description = "Theme configuration.",
     Position = "Right",
 })
 
