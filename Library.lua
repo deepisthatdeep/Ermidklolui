@@ -186,6 +186,40 @@ function Library:CreateWindow(cfg)
         })
     end
 
+    local function diamond(parent, x, y, size, color, transparency)
+        return line(
+            parent,
+            x,
+            y,
+            size or 7,
+            size or 7,
+            45,
+            color or P.line,
+            transparency or 0
+        )
+    end
+
+    local function ring(parent, x, y, size, color, transparency, thickness)
+        local holder = make("Frame", parent, {
+            Position = UDim2.fromOffset(x, y),
+            Size = UDim2.fromOffset(size, size),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+        })
+
+        make("UICorner", holder, {
+            CornerRadius = UDim.new(1, 0),
+        })
+
+        make("UIStroke", holder, {
+            Color = color or P.line,
+            Transparency = transparency or 0,
+            Thickness = thickness or 1,
+        })
+
+        return holder
+    end
+
     for i = 0, 5 do
         local x = 24 + i * 153
         line(art, x, 177, 1, 360, 0, P.line, .78)
@@ -219,6 +253,71 @@ function Library:CreateWindow(cfg)
     line(art, 34, 89, 40, 1, 0, P.line, .2)
     line(art, 105, 89, 40, 1, 0, P.line, .2)
 
+    -- Layered frame-within-frame ornamentation.
+    for inset = 0, 2 do
+        local offset = 13 + inset * 5
+        local alpha = .52 + inset * .11
+
+        line(art, offset, offset, 850 - offset * 2, 1, 0, P.line, alpha)
+        line(art, offset, 566 - offset - 1, 850 - offset * 2, 1, 0, P.line, alpha)
+        line(art, offset, offset, 1, 566 - offset * 2, 0, P.line, alpha)
+        line(art, 850 - offset - 1, offset, 1, 566 - offset * 2, 0, P.line, alpha)
+    end
+
+    -- Crown detail above the content header.
+    line(art, 262, 34, 126, 1, 0, P.line, .35)
+    line(art, 462, 34, 126, 1, 0, P.line, .35)
+    line(art, 388, 34, 37, 1, -42, P.accent, .18)
+    line(art, 425, 34, 37, 1, 42, P.accent, .18)
+    diamond(art, 421, 28, 8, P.accent, .05)
+    diamond(art, 397, 31, 5, P.line, .28)
+    diamond(art, 445, 31, 5, P.line, .28)
+
+    -- Rose-window motif centered behind the main content.
+    local roseX, roseY = 673, 287
+    ring(art, roseX, roseY, 104, P.line, .78, 1)
+    ring(art, roseX + 12, roseY + 12, 80, P.line, .82, 1)
+    ring(art, roseX + 31, roseY + 31, 42, P.accent, .84, 1)
+
+    for angle = 0, 150, 30 do
+        line(
+            art,
+            roseX + 51,
+            roseY + 17,
+            1,
+            70,
+            angle,
+            P.line,
+            .84
+        )
+    end
+
+    diamond(art, roseX + 48, roseY + 48, 8, P.accent, .72)
+
+    -- Sidebar spine and ornamental joints.
+    line(art, 18, 102, 1, 282, 0, P.line, .32)
+    line(art, 164, 102, 1, 282, 0, P.line, .58)
+
+    for i = 0, 6 do
+        local y = 102 + i * 46
+        diamond(art, 14, y - 3, 7, i == 0 and P.accent or P.line, .2)
+        line(art, 22, y, 11, 1, 0, P.line, .5)
+    end
+
+    -- Footer rail and suspended center ornament.
+    line(art, 186, 488, 642, 1, 0, P.line, .36)
+    line(art, 186, 491, 642, 1, 0, P.line, .78)
+    diamond(art, 505, 485, 7, P.accent, .18)
+    line(art, 509, 492, 1, 27, 0, P.line, .72)
+    diamond(art, 506, 518, 6, P.line, .42)
+
+    -- Small repeating lancets behind the lower content field.
+    for x = 205, 790, 73 do
+        line(art, x, 453, 24, 1, -53, P.line, .86)
+        line(art, x + 17, 453, 24, 1, 53, P.line, .86)
+        line(art, x + 9, 439, 1, 37, 0, P.line, .9)
+    end
+
     make("Frame", window, {
         Name = "ContentVeil",
         Position = UDim2.fromOffset(174, 12),
@@ -227,6 +326,58 @@ function Library:CreateWindow(cfg)
         BackgroundTransparency = .12,
         BorderSizePixel = 0,
     })
+
+    -- Inner content frame with clipped-corner illusion.
+    local innerFrame = make("Frame", window, {
+        Name = "InnerContentFrame",
+        Position = UDim2.fromOffset(181, 57),
+        Size = UDim2.fromOffset(648, 435),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+
+    make("UIStroke", innerFrame, {
+        Color = P.line,
+        Thickness = 1,
+        Transparency = .62,
+    })
+
+    for _, cornerData in ipairs({
+        {0, 0, 1, 1},
+        {648, 0, -1, 1},
+        {0, 435, 1, -1},
+        {648, 435, -1, -1},
+    }) do
+        local x, y, sx, sy = table.unpack(cornerData)
+        line(
+            innerFrame,
+            x + (sx < 0 and -20 or 0),
+            y,
+            20,
+            1,
+            0,
+            P.accent,
+            .24
+        )
+        line(
+            innerFrame,
+            x,
+            y + (sy < 0 and -20 or 0),
+            1,
+            20,
+            0,
+            P.accent,
+            .24
+        )
+        diamond(
+            innerFrame,
+            x + (sx < 0 and -8 or 1),
+            y + (sy < 0 and -8 or 1),
+            6,
+            P.line,
+            .18
+        )
+    end
 
     local header = make("Frame", window, {
         Size = UDim2.fromOffset(746, 62),
@@ -247,6 +398,13 @@ function Library:CreateWindow(cfg)
         13,
         P.bright
     )
+
+    -- Header heraldry around the breadcrumb.
+    line(header, 188, 12, 1, 39, 0, P.line, .36)
+    diamond(header, 184, 27, 8, P.accent, .12)
+    line(header, 202, 49, 356, 1, 0, P.line, .62)
+    diamond(header, 563, 46, 6, P.line, .28)
+    line(header, 574, 49, 91, 1, 0, P.line, .74)
 
     local function button(parent, buttonTitle, x, y, width, callback)
         local object = make("TextButton", parent, {
@@ -559,6 +717,13 @@ function Library:CreateWindow(cfg)
 
         navButton.BackgroundTransparency = #tabs == 0 and 0 or .6
         navButton.TextColor3 = #tabs == 0 and P.bright or P.muted
+
+        -- Sidebar tab ornament: rail, rune node, and trailing stitch.
+        line(navButton, 4, 6, 1, 18, 0, P.accent, #tabs == 0 and .05 or .62)
+        diamond(navButton, 10, 11, 7, P.line, .2)
+        line(navButton, 118, 15, 8, 1, 0, P.line, .55)
+        diamond(navButton, 126, 12, 5, P.line, .45)
+
         nav[name] = navButton
 
         local Tab = {
@@ -591,6 +756,30 @@ function Library:CreateWindow(cfg)
             make("UIStroke", card, {
                 Color = P.line,
                 Thickness = 1,
+            })
+
+            -- Ornamental card joints and double-line header rail.
+            line(card, 8, 6, 38, 1, 0, P.line, .42)
+            diamond(card, 4, 3, 7, P.accent, .18)
+            line(card, 49, 6, 1, 10, 0, P.line, .72)
+
+            local rightJoint = make("Frame", card, {
+                AnchorPoint = Vector2.new(1, 0),
+                Position = UDim2.new(1, -8, 0, 6),
+                Size = UDim2.fromOffset(38, 1),
+                BackgroundColor3 = P.line,
+                BackgroundTransparency = .42,
+                BorderSizePixel = 0,
+            })
+
+            local rightDiamond = make("Frame", card, {
+                AnchorPoint = Vector2.new(1, 0),
+                Position = UDim2.new(1, -4, 0, 3),
+                Size = UDim2.fromOffset(7, 7),
+                Rotation = 45,
+                BackgroundColor3 = P.accent,
+                BackgroundTransparency = .18,
+                BorderSizePixel = 0,
             })
 
             make("UIPadding", card, {
