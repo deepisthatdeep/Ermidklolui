@@ -1,6 +1,6 @@
-# Leech UI
+# Universal UI Library
 
-A universal Roblox UI library that combines the original **Leech** identity with a cleaner **Project Rain-inspired** layout.
+A reusable Roblox UI library with a detailed dark interface, modular layout, and intricate native background.
 
 The library contains **no game-specific logic**. Every component is callback-driven, so it can be used with any Roblox script.
 
@@ -8,9 +8,9 @@ The library contains **no game-specific logic**. Every component is callback-dri
 
 The current build uses:
 
-- Project Rain-style rounded sidebar, page titles, compact cards, modern toggles, and clean spacing.
-- Leech-inspired purple/lavender identity.
-- A detailed native background made from layered gradients, architectural grid lines, diagonal rain streaks, gothic tracery, corner diamonds, and accent nodes.
+- Rounded sidebar navigation, page titles, compact cards, modern toggles, and clean spacing.
+- Purple/cyan accent palette with neutral branding.
+- A detailed native background made from layered gradients, architectural grid lines, diagonal accent streaks, gothic tracery, corner diamonds, and accent nodes.
 - Responsive scaling for smaller viewports.
 - Draggable and minimizable window.
 - RightShift show/hide.
@@ -24,8 +24,8 @@ No external images are required for the background.
 ## Load
 
 ```lua
-local Leech = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Leech.lua"
+local Library = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua"
 ))()
 ```
 
@@ -42,11 +42,11 @@ loadstring(game:HttpGet(
 ## Create a window
 
 ```lua
-local Window = Leech:CreateWindow({
+local Window = Library:CreateWindow({
     Title = "My Script",
     SubTitle = "UNIVERSAL INTERFACE",
     Version = "v1.0",
-    Theme = "LeechRain",
+    Theme = "Default",
 })
 ```
 
@@ -54,10 +54,10 @@ local Window = Leech:CreateWindow({
 
 | Field | Type | Default |
 |---|---|---|
-| `Title` | string | `"LEECH"` |
+| `Title` | string | `"INTERFACE"` |
 | `SubTitle` | string | `"UNIVERSAL INTERFACE"` |
 | `Version` | string | `"UI LIBRARY"` |
-| `Theme` | string/table | `"LeechRain"` |
+| `Theme` | string/table | `"Default"` |
 | `Width` | number | `780` |
 | `Height` | number | `550` |
 | `ToggleKey` | KeyCode/false | `RightShift` |
@@ -69,9 +69,9 @@ local Window = Leech:CreateWindow({
 ### Built-in themes
 
 ```lua
-Theme = "LeechRain"   -- default purple/cyan hybrid
-Theme = "Rain"        -- cyan Project Rain direction
-Theme = "ClassicLeech"
+Theme = "Default"   -- default purple/cyan hybrid
+Theme = "Cyan"      -- cyan accent
+Theme = "Purple"
 ```
 
 You can also pass a custom theme table.
@@ -291,6 +291,6 @@ Both can be changed or disabled through `CreateWindow`.
 
 ## Files
 
-- `Leech.lua` — reusable library.
+- `Library.lua` — reusable library.
 - `Example.lua` — complete showcase.
 - `README.md` — API reference.
