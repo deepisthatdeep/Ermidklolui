@@ -2,34 +2,6 @@
 
 A reusable Roblox UI library using the same core visual layout as the original interface this project was based on, but with neutral branding and no game-specific logic.
 
-## What changed
-
-This build intentionally keeps the original interface structure:
-
-- 850 × 566 main window
-- dark purple/black palette
-- thin purple borders
-- gothic architectural tracery in the background
-- Antique-font section headings
-- fixed numbered sidebar navigation
-- right-aligned ON / OFF controls
-- right-side text input controls
-- compact full-width cycle rows
-- original scrolling-page dimensions
-- original draggable-header behavior
-- original responsive scaling formula
-- compact bottom status/footer strip
-
-It intentionally removes:
-
-- the pause button
-- F6 pause handling
-- `ACTIVE / PAUSE` wording
-- game-specific branding
-- game-specific feature logic
-
----
-
 ## Load
 
 ```lua
@@ -64,12 +36,12 @@ local Window = Library:CreateWindow({
 
 | Field | Type | Default |
 |---|---|---|
-| `Title` | string | `"INTERFACE"` |
-| `SubTitle` | string | `"U N I V E R S A L"` |
-| `ProductName` | string | `"SYSTEM"` |
-| `CurrentPage` | string | `"MAIN"` |
+| `Title` | string | `"AETHER"` |
+| `SubTitle` | string | `"S P E C T R A L"` |
+| `ProductName` | string | `"PRISM"` |
+| `CurrentPage` | string | `"OVERVIEW"` |
 | `Version` | string | `"UI LIBRARY"` |
-| `Palette` | table | original purple palette |
+| `Palette` | table | white accents on dark panels |
 | `ToggleKey` | KeyCode/false | `RightShift` |
 | `UnloadKey` | KeyCode/false | `F9` |
 | `Parent` | Instance | `gethui()` or `PlayerGui` |
@@ -78,19 +50,23 @@ local Window = Library:CreateWindow({
 
 ---
 
-## Original palette
+## Default palette
+
+The 940 × 610 window uses white text, borders, accents, and constellation artwork on dark backgrounds.
 
 ```lua
-bg     = Color3.fromRGB(8, 7, 12)
-card   = Color3.fromRGB(18, 12, 25)
-line   = Color3.fromRGB(77, 48, 101)
-accent = Color3.fromRGB(145, 99, 182)
-bright = Color3.fromRGB(211, 187, 229)
-text   = Color3.fromRGB(234, 225, 237)
-muted  = Color3.fromRGB(167, 149, 179)
+bg      = Color3.fromRGB(4, 5, 8)
+card    = Color3.fromRGB(8, 10, 16)
+line    = Color3.fromRGB(255, 255, 255)
+accent  = Color3.fromRGB(255, 255, 255)
+accent2 = Color3.fromRGB(255, 255, 255)
+glow    = Color3.fromRGB(255, 255, 255)
+bright  = Color3.fromRGB(255, 255, 255)
+text    = Color3.fromRGB(255, 255, 255)
+muted   = Color3.fromRGB(255, 255, 255)
 ```
 
-You can override any of those through `Palette = {...}`.
+Override channels through `Palette = {...}`. The showcase sets `AutoLoadPalette = false` to start with the default appearance.
 
 ---
 
@@ -123,12 +99,10 @@ Use `Position = "Left"` or `Position = "Right"` on a section:
 
 ```lua
 local Main = General:CreateSection({
-    Title = "Main",
     Position = "Left",
 })
 
 local Tuning = General:CreateSection({
-    Title = "Tuning",
     Position = "Right",
 })
 
@@ -169,17 +143,11 @@ local Tabs = {
 
 ```lua
 local General = Main:CreateSection({
-    Title = "General",
-    Level = 1,
-    Description = "Primary script controls.",
+    Position = "Left",
 })
 ```
 
-If `Level` is provided, the heading becomes:
-
-```text
-GENERAL · LEVEL 1
-```
+Omit `Title` or set it to `false` for an unlabeled groupbox. Explicit titles and descriptions remain optional.
 
 ---
 
@@ -225,7 +193,7 @@ LOCKED
 
 ## Slider
 
-The original interface used numeric text-entry controls rather than a draggable bar. `CreateSlider` preserves that appearance.
+Sliders use a draggable bar with the current value aligned to the right. Mouse and touch input are supported.
 
 ```lua
 local Slider = General:CreateSlider({
@@ -366,7 +334,7 @@ Progress values are normalized from `0` to `1`.
 
 ## Manual color editor
 
-The Settings page includes a **Color Matrix** section that lets you edit every palette channel individually. Clicking any color field opens a popup HSV picker with a saturation/value square, hue strip, live preview, hex field, and Select button.
+The Settings page includes an unlabeled groupbox that lets you edit palette channels individually. Clicking any color field opens a popup HSV picker with a saturation/value square, hue strip, live preview, hex field, and Select button.
 
 - Background
 - Panel
@@ -432,3 +400,4 @@ There is no F6 pause hotkey.
 - `ColorPicker.lua` — popup HSV color picker used by color controls.
 - `Example.lua` — full showcase.
 - `README.md` — API reference.
+
