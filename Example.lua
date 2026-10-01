@@ -44,7 +44,8 @@ local Settings = Window:CreateTab({
 
 local GeneralSection = General:CreateSection({
     Title = "General",
-    Description = "N/A",
+    Description = "Primary feature controls.",
+    Position = "Left",
 })
 
 GeneralSection:CreateToggle({
@@ -73,9 +74,38 @@ GeneralSection:CreateInput({
     end,
 })
 
+local GeneralTuning = General:CreateSection({
+    Title = "Feature Tuning",
+    Description = "Separate right-side groupbox for sliders and values.",
+    Position = "Right",
+})
+
+GeneralTuning:CreateSlider({
+    Title = "Strength",
+    Range = {0, 100},
+    Default = 50,
+    Increment = 1,
+    Suffix = "%",
+    Callback = function(value)
+        print("Strength:", value)
+    end,
+})
+
+GeneralTuning:CreateSlider({
+    Title = "Delay",
+    Range = {0, 2},
+    Default = 0.25,
+    Increment = 0.05,
+    Suffix = "s",
+    Callback = function(value)
+        print("Delay:", value)
+    end,
+})
+
 local PlayerSection = Player:CreateSection({
     Title = "Movement",
-    Description = "N/A",
+    Description = "Feature toggles.",
+    Position = "Left",
 })
 
 PlayerSection:CreateToggle({
@@ -86,7 +116,13 @@ PlayerSection:CreateToggle({
     end,
 })
 
-PlayerSection:CreateSlider({
+local PlayerTuning = Player:CreateSection({
+    Title = "Movement Values",
+    Description = "Numeric tuning is kept in the right column.",
+    Position = "Right",
+})
+
+PlayerTuning:CreateSlider({
     Title = "Walk Speed Value",
     Range = {0, 100},
     Default = 0,
@@ -104,7 +140,7 @@ PlayerSection:CreateToggle({
     end,
 })
 
-PlayerSection:CreateSlider({
+PlayerTuning:CreateSlider({
     Title = "Jump Power Value",
     Range = {0, 150},
     Default = 0,
@@ -252,7 +288,8 @@ MiscSection:CreateParagraph({
 
 local SettingsSection = Settings:CreateSection({
     Title = "Settings",
-    Description = "N/A",
+    Description = "General configuration.",
+    Position = "Left",
 })
 
 SettingsSection:CreateKeybind({
@@ -274,7 +311,8 @@ SettingsSection:CreateInput({
 
 local ColorSection = Settings:CreateSection({
     Title = "Colors",
-    Description = "N/A",
+    Description = "Theme configuration.",
+    Position = "Right",
 })
 
 local ColorControls = {}
