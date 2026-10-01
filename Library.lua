@@ -2573,7 +2573,7 @@ function Library:CreateWindow(cfg)
                     local c = object.TextColor3
                     local luminance = c.R * .2126 + c.G * .7152 + c.B * .0722
 
-                    if luminance < .52 then
+                    if luminance < .72 then
                         object.TextColor3 = Color3.fromRGB(255, 255, 255)
                     end
 
@@ -2586,6 +2586,22 @@ function Library:CreateWindow(cfg)
 
     enforceReadableText()
     task.defer(enforceReadableText)
+
+    task.spawn(function()
+        while alive and task.wait(.3) do
+            enforceReadableText()
+
+            for _, object in ipairs(window:GetDescendants()) do
+                if object.Name == "ButtonText" and object:IsA("TextLabel") then
+                    object.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    object.TextTransparency = 0
+                    object.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    object.TextStrokeTransparency = .08
+                    object.ZIndex = math.max(object.ZIndex, 20)
+                end
+            end
+        end
+    end)
 
     updateFooter()
 
