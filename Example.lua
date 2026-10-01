@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=379fcb6"
 ))()
 
 local Window = Library:CreateWindow({
