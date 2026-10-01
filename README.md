@@ -339,7 +339,7 @@ Progress values are normalized from `0` to `1`.
 
 ## Manual color editor
 
-The Settings page includes a **Color Matrix** section that lets you edit every palette channel individually with hex values:
+The Settings page includes a **Color Matrix** section that lets you edit every palette channel individually. Clicking any color field opens a popup HSV picker with a saturation/value square, hue strip, live preview, hex field, and Select button.
 
 - Background
 - Panel
@@ -402,5 +402,6 @@ There is no F6 pause hotkey.
 ## Files
 
 - `Library.lua` — reusable UI library.
+- `ColorPicker.lua` — popup HSV color picker used by color controls.
 - `Example.lua` — full showcase.
 - `README.md` — API reference.
