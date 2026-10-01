@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=288182c"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=ui-cleanup-20261001"
 ))()
 
 local Window = Library:CreateWindow({
@@ -380,3 +380,4 @@ SettingsSection:CreateParagraph({
 
 Window:SetStatus("N/A")
 Window:SetFooter("N/A", "N/A")
+
