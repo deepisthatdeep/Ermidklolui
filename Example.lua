@@ -9,7 +9,7 @@ local Window = Library:CreateWindow({
     CurrentPage = "N/A",
     Version = "N/A",
     PaletteFile = "GenericUI_palette_v2.json",
-    AutoLoadPalette = true,
+    AutoLoadPalette = false,
 })
 
 local General = Window:CreateTab({
@@ -318,7 +318,7 @@ for _, row in ipairs(ColorRows) do
 
     ColorControls[key] = ColorSection:CreateColorInput({
         Title = label,
-        Default = Window:GetPaletteColor(key),
+        Default = Color3.fromRGB(255, 255, 255),
         Callback = function(color)
             Window:SetPaletteColor(key, color)
             Window:SetStatus("N/A")
