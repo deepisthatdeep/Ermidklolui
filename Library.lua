@@ -20,8 +20,8 @@ Library.Palette = {
     line = Color3.fromRGB(70, 86, 138),
     accent = Color3.fromRGB(176, 148, 255),
     accent2 = Color3.fromRGB(104, 224, 255),
-    glow = Color3.fromRGB(255, 255, 255),
-    bright = Color3.fromRGB(255, 255, 255),
+    glow = Color3.fromRGB(220, 242, 255),
+    bright = Color3.fromRGB(246, 249, 255),
     text = Color3.fromRGB(255, 255, 255),
     muted = Color3.fromRGB(224, 230, 245),
 }
