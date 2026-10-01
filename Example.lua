@@ -3,35 +3,35 @@ local Library = loadstring(game:HttpGet(
 ))()
 
 local Window = Library:CreateWindow({
-    Title = "INTERFACE",
-    SubTitle = "U N I V E R S A L",
-    ProductName = "SYSTEM",
-    CurrentPage = "MAIN",
-    Version = "EXAMPLE BUILD",
+    Title = "AETHER",
+    SubTitle = "S P E C T R A L",
+    ProductName = "PRISM",
+    CurrentPage = "OVERVIEW",
+    Version = "NIGHTFALL BUILD",
 })
 
 local Main = Window:CreateTab({
-    Title = "Main",
+    Title = "Overview",
     Index = 1,
 })
 
 local Combat = Window:CreateTab({
-    Title = "Combat",
+    Title = "Signal",
     Index = 2,
 })
 
 local Automation = Window:CreateTab({
-    Title = "Automation",
+    Title = "Flow",
     Index = 3,
 })
 
 local Targeting = Window:CreateTab({
-    Title = "Targeting",
+    Title = "Focus",
     Index = 4,
 })
 
 local Vision = Window:CreateTab({
-    Title = "Vision",
+    Title = "Optics",
     Index = 5,
 })
 
@@ -247,5 +247,5 @@ SettingsSection:CreateParagraph({
     Content = "F9 unloads the interface. RightShift hides or shows it. There is no pause control.",
 })
 
-Window:SetStatus("READY")
-Window:SetFooter("EXAMPLE BUILD", "Universal UI library loaded")
+Window:SetStatus("STABLE")
+Window:SetFooter("NIGHTFALL BUILD", "Spectral interface online")
