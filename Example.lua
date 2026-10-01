@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=palette-roles-20261001"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=palette-retention-20261001"
 ))()
 
 local Window = Library:CreateWindow({
