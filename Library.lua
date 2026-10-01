@@ -139,8 +139,8 @@ function Library:CreateWindow(cfg)
     end)
 
     local window = make("Frame", gui, {
-        Size = UDim2.fromOffset(850, 566),
-        Position = UDim2.new(.5, -425, .5, -283),
+        Size = UDim2.fromOffset(940, 610),
+        Position = UDim2.new(.5, -470, .5, -305),
         BackgroundColor3 = P.bg,
         BorderSizePixel = 0,
         ClipsDescendants = true,
@@ -320,12 +320,12 @@ function Library:CreateWindow(cfg)
         line(art, x + 55, 102, 1, 435, 0, P.line, .86)
     end
 
-    for _, x in ipairs({8, 840}) do
-        line(art, x, 8, 1, 550, 0, P.line, .1)
+    for _, x in ipairs({8, 930}) do
+        line(art, x, 8, 1, 594, 0, P.line, .1)
     end
 
-    for _, y in ipairs({8, 556}) do
-        line(art, 8, y, 832, 1, 0, P.line, .1)
+    for _, y in ipairs({8, 600}) do
+        line(art, 8, y, 922, 1, 0, P.line, .1)
     end
 
     for _, cornerData in ipairs({
@@ -349,10 +349,10 @@ function Library:CreateWindow(cfg)
         local offset = 13 + inset * 5
         local alpha = .52 + inset * .11
 
-        line(art, offset, offset, 850 - offset * 2, 1, 0, P.line, alpha)
-        line(art, offset, 566 - offset - 1, 850 - offset * 2, 1, 0, P.line, alpha)
-        line(art, offset, offset, 1, 566 - offset * 2, 0, P.line, alpha)
-        line(art, 850 - offset - 1, offset, 1, 566 - offset * 2, 0, P.line, alpha)
+        line(art, offset, offset, 940 - offset * 2, 1, 0, P.line, alpha)
+        line(art, offset, 610 - offset - 1, 940 - offset * 2, 1, 0, P.line, alpha)
+        line(art, offset, offset, 1, 610 - offset * 2, 0, P.line, alpha)
+        line(art, 850 - offset - 1, offset, 1, 610 - offset * 2, 0, P.line, alpha)
     end
 
     -- Crown detail above the content header.
@@ -556,10 +556,56 @@ function Library:CreateWindow(cfg)
     diamond(crescentHolder, 13, 54, 5, P.accent, .28)
     diamond(crescentHolder, 48, 11, 4, P.glow, .52)
 
+    -- Large refractive lattice: intentionally obvious, not subtle.
+    local lattice = make("Frame", art, {
+        Name = "RefractionLattice",
+        Position = UDim2.fromOffset(205, 72),
+        Size = UDim2.fromOffset(710, 470),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+
+    for i = 0, 8 do
+        local x = 24 + i * 82
+        line(lattice, x, 18, 1, 426, 0, i % 2 == 0 and P.accent2 or P.accent, .93)
+        line(lattice, x - 36, 92, 112, 1, -54, P.line, .9)
+        line(lattice, x - 36, 92, 112, 1, 54, P.line, .9)
+    end
+
+    for i = 0, 5 do
+        local y = 52 + i * 74
+        line(lattice, 14, y, 676, 1, 0, P.line, .94)
+        diamond(lattice, 8 + (i % 2) * 664, y - 3, 7, i % 2 == 0 and P.accent2 or P.accent, .36)
+    end
+
+    local core = make("Frame", lattice, {
+        Position = UDim2.fromOffset(458, 96),
+        Size = UDim2.fromOffset(190, 190),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+
+    ring(core, 0, 0, 190, P.accent2, .72, 1)
+    ring(core, 16, 16, 158, P.accent, .76, 1)
+    ring(core, 39, 39, 112, P.line, .68, 1)
+    ring(core, 66, 66, 58, P.glow, .82, 1)
+
+    for angle = 0, 315, 45 do
+        local rad = math.rad(angle)
+        local x = 95 + math.cos(rad) * 82
+        local y = 95 + math.sin(rad) * 82
+        diamond(core, x - 3, y - 3, 6, angle % 90 == 0 and P.accent2 or P.accent, .12)
+        line(core, 95, 95, 78, 1, angle, P.line, .82)
+    end
+
+    line(lattice, 417, 191, 82, 1, 0, P.accent2, .55)
+    line(lattice, 607, 191, 70, 1, 0, P.accent, .58)
+    diamond(lattice, 548, 187, 9, P.glow, .28)
+
     local contentVeil = make("Frame", window, {
         Name = "ContentGlass",
-        Position = UDim2.fromOffset(174, 12),
-        Size = UDim2.fromOffset(662, 542),
+        Position = UDim2.fromOffset(202, 16),
+        Size = UDim2.fromOffset(718, 578),
         BackgroundColor3 = P.card,
         BackgroundTransparency = .68,
         BorderSizePixel = 0,
@@ -582,8 +628,8 @@ function Library:CreateWindow(cfg)
     -- Inner content frame with clipped-corner illusion.
     local innerFrame = make("Frame", window, {
         Name = "InnerContentFrame",
-        Position = UDim2.fromOffset(181, 57),
-        Size = UDim2.fromOffset(648, 435),
+        Position = UDim2.fromOffset(214, 68),
+        Size = UDim2.fromOffset(697, 474),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     })
@@ -596,9 +642,9 @@ function Library:CreateWindow(cfg)
 
     for _, cornerData in ipairs({
         {0, 0, 1, 1},
-        {648, 0, -1, 1},
-        {0, 435, 1, -1},
-        {648, 435, -1, -1},
+        {697, 0, -1, 1},
+        {0, 474, 1, -1},
+        {697, 474, -1, -1},
     }) do
         local x, y, sx, sy = table.unpack(cornerData)
         line(
@@ -687,6 +733,10 @@ function Library:CreateWindow(cfg)
             Transparency = .52,
         })
 
+        make("UICorner", object, {
+            CornerRadius = UDim.new(0, 7),
+        })
+
         local buttonGradient = make("UIGradient", object, {
             Rotation = 0,
             Color = ColorSequence.new({
@@ -725,7 +775,7 @@ function Library:CreateWindow(cfg)
         return object
     end
 
-    button(window, "—", 758, 18, 28, function()
+    button(window, "—", 848, 18, 30, function()
         gui.Enabled = false
     end)
 
@@ -759,7 +809,7 @@ function Library:CreateWindow(cfg)
         end
     end
 
-    button(window, "×", 797, 18, 28, function()
+    button(window, "×", 888, 18, 30, function()
         Window:Destroy()
     end)
 
@@ -834,8 +884,8 @@ function Library:CreateWindow(cfg)
 
     local sidebarGlass = make("Frame", window, {
         Name = "SidebarGlass",
-        Position = UDim2.fromOffset(17, 98),
-        Size = UDim2.fromOffset(151, 291),
+        Position = UDim2.fromOffset(18, 103),
+        Size = UDim2.fromOffset(178, 354),
         BackgroundColor3 = P.card,
         BackgroundTransparency = .78,
         BorderSizePixel = 0,
@@ -866,9 +916,9 @@ function Library:CreateWindow(cfg)
     text(
         window,
         "F9  unload\nRShift  hide",
-        24,
-        431,
-        142,
+        26,
+        514,
+        160,
         52,
         11,
         P.muted
@@ -877,15 +927,15 @@ function Library:CreateWindow(cfg)
     local sidebarStatus = text(
         window,
         "◇  STABLE",
-        24,
-        398,
-        142,
+        26,
+        476,
+        160,
         24,
         11,
         P.bright
     )
 
-    local footerLabel = text(window, "", 191, 495, 626, 55, 11, P.muted)
+    local footerLabel = text(window, "", 225, 552, 683, 42, 11, P.muted)
 
     local statusText = "STABLE"
     local footerPrimary = versionText
@@ -1010,8 +1060,8 @@ function Library:CreateWindow(cfg)
             or tostring(indexValue)
 
         local page = make("ScrollingFrame", window, {
-            Position = UDim2.fromOffset(190, 64),
-            Size = UDim2.fromOffset(632, 421),
+            Position = UDim2.fromOffset(225, 82),
+            Size = UDim2.fromOffset(683, 448),
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
             ScrollBarThickness = 3,
@@ -1037,15 +1087,16 @@ function Library:CreateWindow(cfg)
         local navButton = button(
             window,
             string.format("%s   %s", indexText, name),
-            24,
-            107 + (#tabs * 46),
-            133,
+            27,
+            116 + (#tabs * 52),
+            156,
             function()
                 Window:Select(name)
             end
         )
 
-        navButton.BackgroundTransparency = #tabs == 0 and 0 or .6
+        navButton.Size = UDim2.fromOffset(156, 38)
+        navButton.BackgroundTransparency = #tabs == 0 and .02 or .62
         navButton.TextColor3 = #tabs == 0 and P.bright or P.muted
 
         -- Sidebar tab ornament: rail, rune node, and trailing stitch.
@@ -1087,6 +1138,10 @@ function Library:CreateWindow(cfg)
                 Color = P.accent,
                 Thickness = 1,
                 Transparency = .48,
+            })
+
+            make("UICorner", card, {
+                CornerRadius = UDim.new(0, 9),
             })
 
             make("UIGradient", card, {
@@ -1215,7 +1270,7 @@ function Library:CreateWindow(cfg)
                 local state = control.Default == true
 
                 local row = make("Frame", card, {
-                    Size = UDim2.new(1, 0, 0, 31),
+                    Size = UDim2.new(1, 0, 0, 38),
                     BackgroundTransparency = 1,
                 })
 
@@ -1225,13 +1280,72 @@ function Library:CreateWindow(cfg)
                     0,
                     0,
                     420,
-                    30,
-                    12
+                    38,
+                    12,
+                    P.text
                 )
 
-                local toggleButton = button(row, "", 494, 1, 80, nil)
-                toggleButton.AnchorPoint = Vector2.new(1, 0)
-                toggleButton.Position = UDim2.new(1, 0, 0, 1)
+                local switch = make("TextButton", row, {
+                    AnchorPoint = Vector2.new(1, .5),
+                    Position = UDim2.new(1, 0, .5, 0),
+                    Size = UDim2.fromOffset(82, 28),
+                    BackgroundColor3 = P.Base or P.card,
+                    BackgroundTransparency = .08,
+                    BorderSizePixel = 0,
+                    Text = "",
+                    AutoButtonColor = false,
+                })
+
+                make("UICorner", switch, {
+                    CornerRadius = UDim.new(1, 0),
+                })
+
+                local switchStroke = make("UIStroke", switch, {
+                    Color = P.line,
+                    Thickness = 1,
+                    Transparency = .28,
+                })
+
+                local fill = make("Frame", switch, {
+                    Position = UDim2.fromOffset(3, 3),
+                    Size = UDim2.new(0, 40, 1, -6),
+                    BackgroundColor3 = P.accent,
+                    BackgroundTransparency = .16,
+                    BorderSizePixel = 0,
+                })
+
+                make("UICorner", fill, {
+                    CornerRadius = UDim.new(1, 0),
+                })
+
+                local knob = make("Frame", switch, {
+                    Size = UDim2.fromOffset(20, 20),
+                    Position = UDim2.fromOffset(5, 4),
+                    BackgroundColor3 = P.text,
+                    BorderSizePixel = 0,
+                })
+
+                make("UICorner", knob, {
+                    CornerRadius = UDim.new(1, 0),
+                })
+
+                local knobStroke = make("UIStroke", knob, {
+                    Color = P.accent2,
+                    Thickness = 1,
+                    Transparency = .18,
+                })
+
+                local stateLabel = text(
+                    switch,
+                    "",
+                    28,
+                    0,
+                    49,
+                    28,
+                    10,
+                    P.text
+                )
+                stateLabel.TextXAlignment = Enum.TextXAlignment.Center
 
                 local Object = {}
 
@@ -1239,21 +1353,46 @@ function Library:CreateWindow(cfg)
                     return not control.Requirement or control.Requirement() == true
                 end
 
+                local function render()
+                    local available = unlocked()
+                    stateLabel.Text = not available and "LOCK" or state and "ON" or "OFF"
+                    stateLabel.TextColor3 = P.text
+
+                    local targetX = state and 57 or 5
+                    local targetWidth = state and 76 or 40
+
+                    TweenService:Create(knob, TweenInfo.new(.15, Enum.EasingStyle.Quad), {
+                        Position = UDim2.fromOffset(targetX, 4),
+                    }):Play()
+
+                    TweenService:Create(fill, TweenInfo.new(.15, Enum.EasingStyle.Quad), {
+                        Size = UDim2.new(0, targetWidth, 1, -6),
+                        BackgroundColor3 = state and P.accent2 or P.accent,
+                        BackgroundTransparency = state and .08 or .42,
+                    }):Play()
+
+                    switchStroke.Color = state and P.accent2 or P.line
+                    switchStroke.Transparency = available and .2 or .62
+                    knob.BackgroundTransparency = available and 0 or .42
+                end
+
                 local function set(value, fire)
                     if not unlocked() then
                         safeCall(control.OnLocked)
+                        render()
                         return
                     end
 
                     state = value == true
                     Object.Value.Current = state
+                    render()
 
                     if fire then
                         safeCall(control.Callback, state)
                     end
                 end
 
-                bind(toggleButton.Activated, function()
+                bind(switch.Activated, function()
                     set(not state, true)
                 end)
 
@@ -1267,19 +1406,8 @@ function Library:CreateWindow(cfg)
                     label.Text = value
                 end)
 
-                table.insert(refresh, function()
-                    local available = unlocked()
-
-                    toggleButton.Text = not available and "LOCKED"
-                        or state and "●  ON"
-                        or "○  OFF"
-
-                    toggleButton.TextColor3 = available and P.text
-                        or Color3.fromRGB(210, 218, 238)
-
-                    toggleButton.AutoButtonColor = available
-                    Object.Value.Current = state
-                end)
+                table.insert(refresh, render)
+                render()
 
                 return Object
             end
@@ -1477,85 +1605,149 @@ function Library:CreateWindow(cfg)
 
             function Section:CreateSlider(control)
                 control = control or {}
-                local range = control.Range or {0, 100}
-                local suffix = tostring(control.Suffix or "")
-                local current = tonumber(control.Default) or tonumber(range[1]) or 0
-                local step = tonumber(control.Increment) or 1
 
-                local row = make("Frame", card, {
-                    Size = UDim2.new(1, 0, 0, 32),
+                local range = control.Range or {0, 100}
+                local minimum = tonumber(range[1]) or 0
+                local maximum = tonumber(range[2]) or 100
+                local step = tonumber(control.Increment) or 1
+                local suffix = tostring(control.Suffix or "")
+                local value = math.clamp(tonumber(control.Default) or minimum, minimum, maximum)
+
+                local holder = make("Frame", card, {
+                    Size = UDim2.new(1, 0, 0, 48),
                     BackgroundTransparency = 1,
                 })
 
                 local label = text(
-                    row,
+                    holder,
                     control.Title or "Slider",
                     0,
                     0,
-                    330,
-                    30,
-                    12
+                    430,
+                    21,
+                    12,
+                    P.text
                 )
 
-                local box = make("TextBox", row, {
-                    Text = tostring(current) .. suffix,
-                    Size = UDim2.new(0, 240, 0, 28),
-                    Position = UDim2.new(1, -240, 0, 2),
-                    BackgroundColor3 = P.bg,
+                local valueLabel = text(
+                    holder,
+                    tostring(value) .. suffix,
+                    445,
+                    0,
+                    143,
+                    21,
+                    11,
+                    P.text
+                )
+                valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+                local track = make("Frame", holder, {
+                    Position = UDim2.fromOffset(0, 31),
+                    Size = UDim2.new(1, 0, 0, 5),
+                    BackgroundColor3 = P.line,
+                    BackgroundTransparency = .42,
                     BorderSizePixel = 0,
-                    TextColor3 = P.text,
-                    Font = Enum.Font.Code,
-                    TextSize = 12,
-                    ClearTextOnFocus = false,
+                })
+
+                make("UICorner", track, {
+                    CornerRadius = UDim.new(1, 0),
+                })
+
+                local fill = make("Frame", track, {
+                    Size = UDim2.fromScale(0, 1),
+                    BackgroundColor3 = P.accent2,
+                    BorderSizePixel = 0,
+                })
+
+                make("UICorner", fill, {
+                    CornerRadius = UDim.new(1, 0),
+                })
+
+                local knob = make("Frame", track, {
+                    AnchorPoint = Vector2.new(.5, .5),
+                    Position = UDim2.fromScale(0, .5),
+                    Size = UDim2.fromOffset(13, 13),
+                    BackgroundColor3 = P.text,
+                    BorderSizePixel = 0,
+                })
+
+                make("UICorner", knob, {
+                    CornerRadius = UDim.new(1, 0),
+                })
+
+                make("UIStroke", knob, {
+                    Color = P.accent2,
+                    Thickness = 2,
+                    Transparency = .08,
                 })
 
                 local Object = {}
+                local draggingSlider = false
 
-                local function set(value, fire)
-                    if type(value) == "string" and suffix ~= "" then
-                        value = string.gsub(value, suffix, "")
-                    end
-
-                    value = tonumber(value)
-
-                    if value == nil then
-                        box.Text = tostring(current) .. suffix
-                        return
-                    end
-
-                    value = math.clamp(
-                        value,
-                        tonumber(range[1]) or value,
-                        tonumber(range[2]) or value
-                    )
-
+                local function normalize(v)
+                    v = math.clamp(v, minimum, maximum)
                     if step > 0 then
-                        value = math.floor((value / step) + .5) * step
+                        v = math.floor(((v - minimum) / step) + .5) * step + minimum
                     end
+                    return math.clamp(v, minimum, maximum)
+                end
 
-                    current = value
-                    Object.Value.Current = current
-                    box.Text = tostring(current) .. suffix
+                local function render(fire)
+                    local alpha = maximum == minimum and 0 or (value - minimum) / (maximum - minimum)
+                    fill.Size = UDim2.fromScale(alpha, 1)
+                    knob.Position = UDim2.fromScale(alpha, .5)
+                    valueLabel.Text = tostring(value) .. suffix
+                    Object.Value.Current = value
 
                     if fire then
-                        safeCall(control.Callback, current)
+                        safeCall(control.Callback, value)
                     end
                 end
 
-                bind(box.FocusLost, function()
-                    set(box.Text, true)
+                local function setFromX(x, fire)
+                    local width = track.AbsoluteSize.X
+                    if width <= 0 then return end
+                    local alpha = math.clamp((x - track.AbsolutePosition.X) / width, 0, 1)
+                    value = normalize(minimum + (maximum - minimum) * alpha)
+                    render(fire)
+                end
+
+                bind(track.InputBegan, function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1
+                        or input.UserInputType == Enum.UserInputType.Touch then
+                        draggingSlider = true
+                        setFromX(input.Position.X, true)
+                    end
                 end)
 
-                Object.Value = proxy(current, function(value)
-                    set(value, true)
+                bind(Input.InputChanged, function(input)
+                    if draggingSlider and (
+                        input.UserInputType == Enum.UserInputType.MouseMovement
+                        or input.UserInputType == Enum.UserInputType.Touch
+                    ) then
+                        setFromX(input.Position.X, true)
+                    end
                 end)
 
-                Object.Name = proxy(control.Title or "Slider", function(value)
-                    value = tostring(value)
-                    Object.Name.Current = value
-                    label.Text = value
+                bind(Input.InputEnded, function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1
+                        or input.UserInputType == Enum.UserInputType.Touch then
+                        draggingSlider = false
+                    end
                 end)
 
+                Object.Value = proxy(value, function(newValue)
+                    value = normalize(tonumber(newValue) or value)
+                    render(true)
+                end)
+
+                Object.Name = proxy(control.Title or "Slider", function(newValue)
+                    newValue = tostring(newValue)
+                    Object.Name.Current = newValue
+                    label.Text = newValue
+                end)
+
+                render(false)
                 return Object
             end
 
@@ -1851,6 +2043,112 @@ function Library:CreateWindow(cfg)
         return Tab
     end
 
+    local colorways = {
+        Moon = {
+            accent = Color3.fromRGB(182, 151, 255),
+            accent2 = Color3.fromRGB(109, 226, 255),
+            line = Color3.fromRGB(92, 112, 170),
+        },
+        Aurora = {
+            accent = Color3.fromRGB(116, 255, 197),
+            accent2 = Color3.fromRGB(103, 218, 255),
+            line = Color3.fromRGB(71, 133, 145),
+        },
+        Rose = {
+            accent = Color3.fromRGB(255, 139, 208),
+            accent2 = Color3.fromRGB(194, 151, 255),
+            line = Color3.fromRGB(139, 84, 139),
+        },
+        Solar = {
+            accent = Color3.fromRGB(255, 193, 107),
+            accent2 = Color3.fromRGB(255, 236, 163),
+            line = Color3.fromRGB(157, 113, 69),
+        },
+        Ice = {
+            accent = Color3.fromRGB(164, 210, 255),
+            accent2 = Color3.fromRGB(214, 251, 255),
+            line = Color3.fromRGB(91, 133, 172),
+        },
+    }
+
+    local colorwayOrder = {"Moon", "Aurora", "Rose", "Solar", "Ice"}
+    local currentColorway = "Moon"
+    local ambientGlow = true
+
+    local function sameColor(a, b)
+        return a.R == b.R and a.G == b.G and a.B == b.B
+    end
+
+    function Window:SetColorway(name)
+        local nextPalette = colorways[name]
+        if not nextPalette then
+            return false
+        end
+
+        local oldAccent = P.accent
+        local oldAccent2 = P.accent2
+        local oldLine = P.line
+
+        for _, object in ipairs(window:GetDescendants()) do
+            if object:IsA("GuiObject") then
+                if sameColor(object.BackgroundColor3, oldAccent) then
+                    object.BackgroundColor3 = nextPalette.accent
+                elseif sameColor(object.BackgroundColor3, oldAccent2) then
+                    object.BackgroundColor3 = nextPalette.accent2
+                elseif sameColor(object.BackgroundColor3, oldLine) then
+                    object.BackgroundColor3 = nextPalette.line
+                end
+            end
+
+            if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
+                if sameColor(object.TextColor3, oldAccent) then
+                    object.TextColor3 = nextPalette.accent
+                elseif sameColor(object.TextColor3, oldAccent2) then
+                    object.TextColor3 = nextPalette.accent2
+                end
+            end
+
+            if object:IsA("UIStroke") then
+                if sameColor(object.Color, oldAccent) then
+                    object.Color = nextPalette.accent
+                elseif sameColor(object.Color, oldAccent2) then
+                    object.Color = nextPalette.accent2
+                elseif sameColor(object.Color, oldLine) then
+                    object.Color = nextPalette.line
+                end
+            end
+        end
+
+        P.accent = nextPalette.accent
+        P.accent2 = nextPalette.accent2
+        P.line = nextPalette.line
+        currentColorway = name
+
+        horizon.BackgroundColor3 = P.glow
+        safeCall(cfg.OnColorwayChanged, name)
+
+        return true
+    end
+
+    function Window:CycleColorway()
+        local index = table.find(colorwayOrder, currentColorway) or 0
+        local nextName = colorwayOrder[(index % #colorwayOrder) + 1]
+        self:SetColorway(nextName)
+        return nextName
+    end
+
+    function Window:GetColorways()
+        return cloneTable(colorwayOrder)
+    end
+
+    function Window:SetAmbientGlow(value)
+        ambientGlow = value == true
+    end
+
+    function Window:GetAmbientGlow()
+        return ambientGlow
+    end
+
     Window._keybinds = {}
 
     bind(Input.InputBegan, function(input, processed)
@@ -1885,8 +2183,8 @@ function Library:CreateWindow(cfg)
             if camera then
                 scale.Scale = math.min(
                     1,
-                    math.max(.3, (camera.ViewportSize.X - 30) / 850),
-                    math.max(.3, (camera.ViewportSize.Y - 70) / 566)
+                    math.max(.3, (camera.ViewportSize.X - 30) / 940),
+                    math.max(.3, (camera.ViewportSize.Y - 70) / 610)
                 )
             end
 
@@ -1905,6 +2203,10 @@ function Library:CreateWindow(cfg)
     task.spawn(function()
         local direction = 1
         while alive and task.wait(1.8) do
+            if not ambientGlow then
+                continue
+            end
+
             direction = -direction
 
             TweenService:Create(windowGradient, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
