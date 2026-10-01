@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=celestial-detail-20261001"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=palette-roles-20261001"
 ))()
 
 local Window = Library:CreateWindow({
@@ -318,9 +318,9 @@ for _, row in ipairs(ColorRows) do
 
     ColorControls[key] = ColorSection:CreateColorInput({
         Title = label,
-        Default = Color3.fromRGB(255, 255, 255),
+        PaletteKey = key,
+        Default = Window:GetPaletteColor(key),
         Callback = function(color)
-            Window:SetPaletteColor(key, color)
             Window:SetStatus("N/A")
         end,
     })
@@ -340,12 +340,6 @@ ColorSection:CreateButton({
     Callback = function()
         local ok = Window:LoadPalette()
 
-        if ok then
-            for key, control in pairs(ColorControls) do
-                control.Value:Set(Window:GetPaletteColor(key))
-            end
-        end
-
         Window:SetStatus("N/A")
         Window:SetFooter("N/A", "N/A")
     end,
@@ -355,10 +349,6 @@ ColorSection:CreateButton({
     Title = "Reset Colors",
     Callback = function()
         Window:ResetPalette()
-
-        for key, control in pairs(ColorControls) do
-            control.Value:Set(Window:GetPaletteColor(key))
-        end
 
         Window:SetStatus("N/A")
         Window:SetFooter("N/A", "N/A")
