@@ -7,6 +7,7 @@
 local Players = game:GetService("Players")
 local Input = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -31,6 +32,38 @@ local function copy(source)
         out[key] = value
     end
     return out
+end
+
+local function colorToHex(color)
+    return string.format(
+        "#%02X%02X%02X",
+        math.floor(color.R * 255 + .5),
+        math.floor(color.G * 255 + .5),
+        math.floor(color.B * 255 + .5)
+    )
+end
+
+local function hexToColor(value)
+    if typeof(value) == "Color3" then
+        return value
+    end
+
+    value = tostring(value or ""):gsub("#", ""):gsub("%s+", "")
+    if #value == 3 then
+        value = value:sub(1, 1):rep(2)
+            .. value:sub(2, 2):rep(2)
+            .. value:sub(3, 3):rep(2)
+    end
+
+    if #value ~= 6 or value:find("[^%x]") then
+        return nil
+    end
+
+    return Color3.fromRGB(
+        tonumber(value:sub(1, 2), 16),
+        tonumber(value:sub(3, 4), 16),
+        tonumber(value:sub(5, 6), 16)
+    )
 end
 
 local function make(className, parent, props)
@@ -99,6 +132,54 @@ function Library:CreateWindow(cfg)
     cfg = cfg or {}
 
     local P = resolvePalette(cfg.Palette)
+    local DefaultPalette = copy(P)
+    local paletteFile = tostring(cfg.PaletteFile or "Ermidklolui_palette.json")
+
+    local function readSavedPalette()
+        if type(isfile) ~= "function" or type(readfile) ~= "function" then
+            return nil
+        end
+
+        local okExists, exists = pcall(isfile, paletteFile)
+        if not okExists or not exists then
+            return nil
+        end
+
+        local okRead, raw = pcall(readfile, paletteFile)
+        if not okRead or type(raw) ~= "string" then
+            return nil
+        end
+
+        local okDecode, decoded = pcall(function()
+            return HttpService:JSONDecode(raw)
+        end)
+
+        if not okDecode or type(decoded) ~= "table" then
+            return nil
+        end
+
+        local source = decoded.colors or decoded
+        local loaded = {}
+
+        for key in pairs(P) do
+            local parsed = hexToColor(source[key])
+            if parsed then
+                loaded[key] = parsed
+            end
+        end
+
+        return loaded
+    end
+
+    if cfg.AutoLoadPalette ~= false then
+        local saved = readSavedPalette()
+        if saved then
+            for key, value in pairs(saved) do
+                P[key] = value
+            end
+        end
+    end
+
     local connections = {}
     local refresh = {}
     local tabs = {}
@@ -1603,6 +1684,119 @@ function Library:CreateWindow(cfg)
                 return Object
             end
 
+            function Section:CreateColorInput(control)
+                control = control or {}
+
+                local current = hexToColor(control.Default) or control.Default
+                if typeof(current) ~= "Color3" then
+                    current = P.accent
+                end
+
+                local row = make("Frame", card, {
+                    Size = UDim2.new(1, 0, 0, 38),
+                    BackgroundTransparency = 1,
+                })
+
+                local label = text(
+                    row,
+                    control.Title or "Color",
+                    0,
+                    0,
+                    350,
+                    38,
+                    12,
+                    P.text
+                )
+
+                local swatch = make("Frame", row, {
+                    AnchorPoint = Vector2.new(1, .5),
+                    Position = UDim2.new(1, -190, .5, 0),
+                    Size = UDim2.fromOffset(28, 28),
+                    BackgroundColor3 = current,
+                    BorderSizePixel = 0,
+                })
+
+                make("UICorner", swatch, {
+                    CornerRadius = UDim.new(0, 7),
+                })
+
+                make("UIStroke", swatch, {
+                    Color = P.text,
+                    Thickness = 1,
+                    Transparency = .45,
+                })
+
+                local box = make("TextBox", row, {
+                    AnchorPoint = Vector2.new(1, .5),
+                    Position = UDim2.new(1, 0, .5, 0),
+                    Size = UDim2.fromOffset(178, 28),
+                    BackgroundColor3 = P.bg,
+                    BackgroundTransparency = .05,
+                    BorderSizePixel = 0,
+                    Text = colorToHex(current),
+                    TextColor3 = P.text,
+                    PlaceholderColor3 = P.muted,
+                    Font = Enum.Font.Code,
+                    TextSize = 12,
+                    ClearTextOnFocus = false,
+                })
+
+                make("UICorner", box, {
+                    CornerRadius = UDim.new(0, 7),
+                })
+
+                make("UIStroke", box, {
+                    Color = P.line,
+                    Thickness = 1,
+                    Transparency = .42,
+                })
+
+                local Object = {}
+
+                local function set(value, fire)
+                    local parsed = hexToColor(value)
+                    if not parsed then
+                        box.Text = colorToHex(current)
+                        return false
+                    end
+
+                    current = parsed
+                    swatch.BackgroundColor3 = current
+                    box.Text = colorToHex(current)
+                    Object.Value.Current = current
+
+                    if fire then
+                        safeCall(control.Callback, current, box.Text)
+                    end
+
+                    return true
+                end
+
+                bind(box.FocusLost, function()
+                    set(box.Text, true)
+                end)
+
+                Object.Value = proxy(current, function(value)
+                    set(value, true)
+                end)
+
+                Object.Name = proxy(control.Title or "Color", function(value)
+                    value = tostring(value)
+                    Object.Name.Current = value
+                    label.Text = value
+                end)
+
+                function Object:SetHex(value)
+                    return set(value, true)
+                end
+
+                function Object:GetHex()
+                    return colorToHex(current)
+                end
+
+                return Object
+            end
+
             function Section:CreateSlider(control)
                 control = control or {}
 
@@ -2043,110 +2237,125 @@ function Library:CreateWindow(cfg)
         return Tab
     end
 
-    local colorways = {
-        Moon = {
-            accent = Color3.fromRGB(182, 151, 255),
-            accent2 = Color3.fromRGB(109, 226, 255),
-            line = Color3.fromRGB(92, 112, 170),
-        },
-        Aurora = {
-            accent = Color3.fromRGB(116, 255, 197),
-            accent2 = Color3.fromRGB(103, 218, 255),
-            line = Color3.fromRGB(71, 133, 145),
-        },
-        Rose = {
-            accent = Color3.fromRGB(255, 139, 208),
-            accent2 = Color3.fromRGB(194, 151, 255),
-            line = Color3.fromRGB(139, 84, 139),
-        },
-        Solar = {
-            accent = Color3.fromRGB(255, 193, 107),
-            accent2 = Color3.fromRGB(255, 236, 163),
-            line = Color3.fromRGB(157, 113, 69),
-        },
-        Ice = {
-            accent = Color3.fromRGB(164, 210, 255),
-            accent2 = Color3.fromRGB(214, 251, 255),
-            line = Color3.fromRGB(91, 133, 172),
-        },
-    }
-
-    local colorwayOrder = {"Moon", "Aurora", "Rose", "Solar", "Ice"}
-    local currentColorway = "Moon"
-    local ambientGlow = true
-
     local function sameColor(a, b)
-        return a.R == b.R and a.G == b.G and a.B == b.B
+        return math.abs(a.R - b.R) < .0001
+            and math.abs(a.G - b.G) < .0001
+            and math.abs(a.B - b.B) < .0001
     end
 
-    function Window:SetColorway(name)
-        local nextPalette = colorways[name]
-        if not nextPalette then
-            return false
+    local function recolorSequence(sequence, oldColor, newColor)
+        local points = {}
+        local changed = false
+
+        for _, point in ipairs(sequence.Keypoints) do
+            local color = point.Value
+            if sameColor(color, oldColor) then
+                color = newColor
+                changed = true
+            end
+            table.insert(points, ColorSequenceKeypoint.new(point.Time, color))
         end
 
-        local oldAccent = P.accent
-        local oldAccent2 = P.accent2
-        local oldLine = P.line
+        return changed and ColorSequence.new(points) or sequence
+    end
 
+    local function applyColor(oldColor, newColor)
         for _, object in ipairs(window:GetDescendants()) do
-            if object:IsA("GuiObject") then
-                if sameColor(object.BackgroundColor3, oldAccent) then
-                    object.BackgroundColor3 = nextPalette.accent
-                elseif sameColor(object.BackgroundColor3, oldAccent2) then
-                    object.BackgroundColor3 = nextPalette.accent2
-                elseif sameColor(object.BackgroundColor3, oldLine) then
-                    object.BackgroundColor3 = nextPalette.line
-                end
+            if object:IsA("GuiObject") and sameColor(object.BackgroundColor3, oldColor) then
+                object.BackgroundColor3 = newColor
             end
 
             if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
-                if sameColor(object.TextColor3, oldAccent) then
-                    object.TextColor3 = nextPalette.accent
-                elseif sameColor(object.TextColor3, oldAccent2) then
-                    object.TextColor3 = nextPalette.accent2
+                if sameColor(object.TextColor3, oldColor) then
+                    object.TextColor3 = newColor
                 end
             end
 
-            if object:IsA("UIStroke") then
-                if sameColor(object.Color, oldAccent) then
-                    object.Color = nextPalette.accent
-                elseif sameColor(object.Color, oldAccent2) then
-                    object.Color = nextPalette.accent2
-                elseif sameColor(object.Color, oldLine) then
-                    object.Color = nextPalette.line
-                end
+            if object:IsA("UIStroke") and sameColor(object.Color, oldColor) then
+                object.Color = newColor
+            elseif object:IsA("UIGradient") then
+                object.Color = recolorSequence(object.Color, oldColor, newColor)
             end
         end
+    end
 
-        P.accent = nextPalette.accent
-        P.accent2 = nextPalette.accent2
-        P.line = nextPalette.line
-        currentColorway = name
+    function Window:SetPaletteColor(key, value)
+        key = tostring(key or "")
+        if P[key] == nil then
+            return false, "Unknown palette key: " .. key
+        end
 
-        horizon.BackgroundColor3 = P.glow
-        safeCall(cfg.OnColorwayChanged, name)
+        local parsed = hexToColor(value)
+        if not parsed then
+            return false, "Invalid color"
+        end
+
+        local old = P[key]
+        P[key] = parsed
+        applyColor(old, parsed)
+
+        return true, parsed
+    end
+
+    function Window:GetPaletteColor(key)
+        return P[tostring(key or "")]
+    end
+
+    function Window:GetPalette()
+        return copy(P)
+    end
+
+    function Window:GetPaletteHex()
+        local out = {}
+        for key, color in pairs(P) do
+            out[key] = colorToHex(color)
+        end
+        return out
+    end
+
+    function Window:SavePalette()
+        if type(writefile) ~= "function" then
+            return false, "writefile is not available in this executor"
+        end
+
+        local payload = {
+            version = 1,
+            colors = self:GetPaletteHex(),
+        }
+
+        local okEncode, encoded = pcall(function()
+            return HttpService:JSONEncode(payload)
+        end)
+        if not okEncode then
+            return false, encoded
+        end
+
+        local okWrite, err = pcall(writefile, paletteFile, encoded)
+        if not okWrite then
+            return false, err
+        end
+
+        return true, paletteFile
+    end
+
+    function Window:LoadPalette()
+        local saved = readSavedPalette()
+        if not saved then
+            return false, "No saved palette found"
+        end
+
+        for key, value in pairs(saved) do
+            self:SetPaletteColor(key, value)
+        end
 
         return true
     end
 
-    function Window:CycleColorway()
-        local index = table.find(colorwayOrder, currentColorway) or 0
-        local nextName = colorwayOrder[(index % #colorwayOrder) + 1]
-        self:SetColorway(nextName)
-        return nextName
-    end
-
-    function Window:GetColorways()
-        return cloneTable(colorwayOrder)
-    end
-
-    function Window:SetAmbientGlow(value)
-        ambientGlow = value == true
-    end
-
-    function Window:GetAmbientGlow()
-        return ambientGlow
+    function Window:ResetPalette()
+        for key, value in pairs(DefaultPalette) do
+            self:SetPaletteColor(key, value)
+        end
+        return self:GetPalette()
     end
 
     Window._keybinds = {}
@@ -2203,10 +2412,6 @@ function Library:CreateWindow(cfg)
     task.spawn(function()
         local direction = 1
         while alive and task.wait(1.8) do
-            if not ambientGlow then
-                continue
-            end
-
             direction = -direction
 
             TweenService:Create(windowGradient, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
