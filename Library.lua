@@ -14,6 +14,29 @@ local LocalPlayer = Players.LocalPlayer
 local Library = {}
 Library.__index = Library
 
+local ColorPickerModule
+
+local function getColorPickerModule()
+    if ColorPickerModule then
+        return ColorPickerModule
+    end
+
+    local ok, result = pcall(function()
+        local source = game:HttpGet(
+            "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/ColorPicker.lua?rev=961f1da"
+        )
+        return loadstring(source)()
+    end)
+
+    if ok and type(result) == "table" and type(result.Create) == "function" then
+        ColorPickerModule = result
+        return ColorPickerModule
+    end
+
+    warn("[UI Library] color picker failed to load:", result)
+    return nil
+end
+
 Library.Palette = {
     bg = Color3.fromRGB(4, 6, 14),
     card = Color3.fromRGB(10, 14, 29),
@@ -1712,7 +1735,7 @@ function Library:CreateWindow(cfg)
                 end
 
                 local row = make("Frame", card, {
-                    Size = UDim2.new(1, 0, 0, 38),
+                    Size = UDim2.new(1, 0, 0, 40),
                     BackgroundTransparency = 1,
                 })
 
@@ -1721,100 +1744,180 @@ function Library:CreateWindow(cfg)
                     control.Title or "Color",
                     0,
                     0,
-                    350,
-                    38,
+                    338,
+                    40,
                     12,
                     Color3.fromRGB(255, 255, 255)
                 )
 
-                local swatch = make("Frame", row, {
+                local selector = make("TextButton", row, {
                     AnchorPoint = Vector2.new(1, .5),
-                    Position = UDim2.new(1, -190, .5, 0),
-                    Size = UDim2.fromOffset(28, 28),
+                    Position = UDim2.new(1, 0, .5, 0),
+                    Size = UDim2.fromOffset(240, 30),
+                    BackgroundColor3 = Color3.fromRGB(8, 11, 23),
+                    BackgroundTransparency = .02,
+                    BorderSizePixel = 0,
+                    Text = "",
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+                    TextStrokeTransparency = .28,
+                    Font = Enum.Font.Code,
+                    TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    AutoButtonColor = false,
+                    ZIndex = 12,
+                })
+
+                make("UICorner", selector, {
+                    CornerRadius = UDim.new(0, 7),
+                })
+
+                local selectorStroke = make("UIStroke", selector, {
+                    Color = P.line,
+                    Thickness = 1,
+                    Transparency = .2,
+                })
+
+                local hexLabel = text(
+                    selector,
+                    colorToHex(current),
+                    12,
+                    0,
+                    176,
+                    30,
+                    12,
+                    Color3.fromRGB(255, 255, 255)
+                )
+                hexLabel.ZIndex = 14
+
+                local swatch = make("Frame", selector, {
+                    AnchorPoint = Vector2.new(1, .5),
+                    Position = UDim2.new(1, -5, .5, 0),
+                    Size = UDim2.fromOffset(32, 20),
                     BackgroundColor3 = current,
                     BorderSizePixel = 0,
+                    ZIndex = 14,
                 })
 
                 make("UICorner", swatch, {
-                    CornerRadius = UDim.new(0, 7),
+                    CornerRadius = UDim.new(0, 4),
                 })
 
                 make("UIStroke", swatch, {
-                    Color = P.text,
-                    Thickness = 1,
-                    Transparency = .45,
-                })
-
-                local box = make("TextBox", row, {
-                    AnchorPoint = Vector2.new(1, .5),
-                    Position = UDim2.new(1, 0, .5, 0),
-                    Size = UDim2.fromOffset(178, 28),
-                    BackgroundColor3 = P.bg,
-                    BackgroundTransparency = .05,
-                    BorderSizePixel = 0,
-                    Text = colorToHex(current),
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-                    TextStrokeTransparency = .35,
-                    PlaceholderColor3 = P.muted,
-                    Font = Enum.Font.Code,
-                    TextSize = 12,
-                    ClearTextOnFocus = false,
-                })
-
-                make("UICorner", box, {
-                    CornerRadius = UDim.new(0, 7),
-                })
-
-                make("UIStroke", box, {
-                    Color = P.line,
+                    Color = Color3.fromRGB(255, 255, 255),
                     Thickness = 1,
                     Transparency = .42,
                 })
 
                 local Object = {}
 
-                local function set(value, fire)
-                    local parsed = hexToColor(value)
+                local function render()
+                    hexLabel.Text = colorToHex(current)
+                    swatch.BackgroundColor3 = current
+                    Object.Value.Current = current
+                end
+
+                local function set(valueToSet, fire)
+                    local parsed = hexToColor(valueToSet)
                     if not parsed then
-                        box.Text = colorToHex(current)
+                        render()
                         return false
                     end
 
                     current = parsed
-                    swatch.BackgroundColor3 = current
-                    box.Text = colorToHex(current)
-                    Object.Value.Current = current
+                    render()
 
                     if fire then
-                        safeCall(control.Callback, current, box.Text)
+                        safeCall(control.Callback, current, colorToHex(current))
                     end
 
                     return true
                 end
 
-                bind(box.FocusLost, function()
-                    set(box.Text, true)
+                local function openPicker()
+                    local Picker = getColorPickerModule()
+                    if not Picker then
+                        Window:Notify({
+                            Title = "Color picker",
+                            Content = "The popup color picker could not be loaded.",
+                            Duration = 3,
+                        })
+                        return
+                    end
+
+                    if Window._activeColorPicker then
+                        pcall(function()
+                            Window._activeColorPicker:Destroy(true)
+                        end)
+                        Window._activeColorPicker = nil
+                    end
+
+                    local picker
+                    picker = Picker.Create({
+                        Parent = window,
+                        Title = Object.Name:Get(),
+                        Color = current,
+                        Accent = P.accent,
+                        Accent2 = P.accent2,
+                        Line = P.line,
+                        OnSelect = function(color)
+                            set(color, true)
+                            if Window._activeColorPicker == picker then
+                                Window._activeColorPicker = nil
+                            end
+                        end,
+                        OnCancel = function()
+                            if Window._activeColorPicker == picker then
+                                Window._activeColorPicker = nil
+                            end
+                        end,
+                    })
+
+                    Window._activeColorPicker = picker
+                end
+
+                bind(selector.MouseEnter, function()
+                    selectorStroke.Color = P.accent2
+                    selectorStroke.Transparency = .02
                 end)
 
-                Object.Value = proxy(current, function(value)
-                    set(value, true)
+                bind(selector.MouseLeave, function()
+                    selectorStroke.Color = P.line
+                    selectorStroke.Transparency = .2
                 end)
 
-                Object.Name = proxy(control.Title or "Color", function(value)
-                    value = tostring(value)
-                    Object.Name.Current = value
-                    label.Text = value
+                bind(selector.Activated, openPicker)
+
+                Object.Value = proxy(current, function(valueToSet)
+                    set(valueToSet, true)
                 end)
 
-                function Object:SetHex(value)
-                    return set(value, true)
+                Object.Name = proxy(control.Title or "Color", function(valueToSet)
+                    valueToSet = tostring(valueToSet)
+                    Object.Name.Current = valueToSet
+                    label.Text = valueToSet
+                end)
+
+                function Object:SetHex(valueToSet)
+                    return set(valueToSet, true)
                 end
 
                 function Object:GetHex()
                     return colorToHex(current)
                 end
 
+                function Object:Open()
+                    openPicker()
+                end
+
+                function Object:Close()
+                    if Window._activeColorPicker then
+                        Window._activeColorPicker:Destroy(true)
+                        Window._activeColorPicker = nil
+                    end
+                end
+
+                render()
                 return Object
             end
 
