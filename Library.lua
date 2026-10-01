@@ -38,15 +38,15 @@ local function getColorPickerModule()
 end
 
 Library.Palette = {
-    bg = Color3.fromRGB(4, 6, 14),
-    card = Color3.fromRGB(10, 14, 29),
-    line = Color3.fromRGB(70, 86, 138),
-    accent = Color3.fromRGB(176, 148, 255),
-    accent2 = Color3.fromRGB(104, 224, 255),
-    glow = Color3.fromRGB(220, 242, 255),
-    bright = Color3.fromRGB(246, 249, 255),
+    bg = Color3.fromRGB(4, 5, 8),
+    card = Color3.fromRGB(8, 10, 16),
+    line = Color3.fromRGB(255, 255, 255),
+    accent = Color3.fromRGB(255, 255, 255),
+    accent2 = Color3.fromRGB(255, 255, 255),
+    glow = Color3.fromRGB(255, 255, 255),
+    bright = Color3.fromRGB(255, 255, 255),
     text = Color3.fromRGB(255, 255, 255),
-    muted = Color3.fromRGB(224, 230, 245),
+    muted = Color3.fromRGB(255, 255, 255),
 }
 
 local function copy(source)
@@ -684,6 +684,69 @@ function Library:CreateWindow(cfg)
             color,
             .5 + (index % 4) * .08
         )
+    end
+
+    -- Extra constellation families to make the field visibly denser.
+    constellation(art, {
+        {203, 187, 3, P.glow},
+        {236, 174, 4, P.accent},
+        {268, 196, 3, P.glow},
+        {301, 182, 4, P.accent2},
+        {333, 205, 3, P.glow},
+    }, P.line, .84)
+
+    constellation(art, {
+        {399, 92, 3, P.glow},
+        {430, 112, 4, P.accent2},
+        {462, 96, 3, P.glow},
+        {495, 121, 4, P.accent},
+        {526, 104, 3, P.glow},
+        {556, 128, 3, P.accent2},
+    }, P.line, .86)
+
+    constellation(art, {
+        {386, 286, 3, P.glow},
+        {419, 266, 4, P.accent},
+        {450, 291, 3, P.glow},
+        {482, 273, 4, P.accent2},
+        {514, 299, 3, P.glow},
+        {547, 281, 4, P.accent},
+    }, P.line, .85)
+
+    constellation(art, {
+        {218, 368, 3, P.glow},
+        {247, 347, 4, P.accent2},
+        {279, 371, 3, P.glow},
+        {309, 352, 4, P.accent},
+        {338, 378, 3, P.glow},
+    }, P.line, .86)
+
+    constellation(art, {
+        {610, 382, 3, P.glow},
+        {642, 362, 4, P.accent},
+        {674, 386, 3, P.glow},
+        {705, 368, 4, P.accent2},
+        {737, 394, 3, P.glow},
+        {772, 374, 4, P.accent},
+        {806, 402, 3, P.glow},
+    }, P.line, .84)
+
+    constellation(art, {
+        {604, 91, 3, P.glow},
+        {633, 112, 4, P.accent2},
+        {659, 94, 3, P.glow},
+        {687, 118, 4, P.accent},
+        {714, 101, 3, P.glow},
+    }, P.line, .87)
+
+    -- Small standalone stars between clusters.
+    for _, star in ipairs({
+        {193, 316, 3}, {352, 126, 2}, {371, 427, 3},
+        {459, 343, 2}, {536, 153, 3}, {583, 354, 2},
+        {650, 444, 3}, {720, 321, 2}, {786, 172, 3},
+        {836, 287, 2}, {574, 224, 2}, {330, 242, 2},
+    }) do
+        dot(art, star[1], star[2], star[3], P.glow, .48)
     end
 
     -- Footer rail remains as the only strong straight guide across the content.
@@ -1755,7 +1818,7 @@ function Library:CreateWindow(cfg)
 
                 local current = hexToColor(control.Default) or control.Default
                 if typeof(current) ~= "Color3" then
-                    current = P.accent
+                    current = Color3.fromRGB(255, 255, 255)
                 end
 
                 local row = make("Frame", card, {
