@@ -210,11 +210,44 @@ VisionSection:CreateToggle({
 
 VisionSection:CreateParagraph({
     Title = "Design",
-    Content = "The window uses the original purple palette, gothic tracery, Antique headings, thin card borders, and fixed sidebar geometry.",
+    Content = "The interface uses layered glass, orbital geometry, refractive latticework, luminous switches, white typography, and animated spectral accents.",
 })
 
 local SettingsSection = Settings:CreateSection({
     Title = "Configuration",
+})
+
+local ColorSection = Settings:CreateSection({
+    Title = "Color Matrix",
+    Description = "Switch the interface lighting profile at runtime.",
+})
+
+ColorSection:CreateDropdown({
+    Title = "Color profile",
+    Options = {"Moon", "Aurora", "Rose", "Solar", "Ice"},
+    Selected = {"Moon"},
+    Callback = function(selected)
+        Window:SetColorway(selected[1])
+        Window:SetStatus(string.upper(selected[1]))
+        Window:SetFooter("NIGHTFALL BUILD", "Color profile: " .. selected[1])
+    end,
+})
+
+ColorSection:CreateToggle({
+    Title = "Ambient light motion",
+    Default = true,
+    Callback = function(value)
+        Window:SetAmbientGlow(value)
+    end,
+})
+
+ColorSection:CreateButton({
+    Title = "Cycle color profile",
+    Callback = function()
+        local name = Window:CycleColorway()
+        Window:SetStatus(string.upper(name))
+        Window:SetFooter("NIGHTFALL BUILD", "Color profile: " .. name)
+    end,
 })
 
 SettingsSection:CreateKeybind({
