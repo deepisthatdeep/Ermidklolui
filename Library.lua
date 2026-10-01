@@ -1189,28 +1189,56 @@ function Library:CreateWindow(cfg)
         local indexText = indexNumber and string.format("%02d", indexNumber)
             or tostring(indexValue)
 
-        local page = make("ScrollingFrame", window, {
+        -- Linoria-style tab body: one selected tab, two independent groupbox columns.
+        local page = make("Frame", window, {
             Position = UDim2.fromOffset(225, 82),
             Size = UDim2.fromOffset(683, 448),
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
-            ScrollBarThickness = 3,
-            ScrollBarImageColor3 = P.accent,
-            CanvasSize = UDim2.new(),
-            AutomaticCanvasSize = Enum.AutomaticSize.Y,
             Visible = #tabs == 0,
         })
 
-        make("UIPadding", page, {
-            PaddingLeft = UDim.new(0, 2),
-            PaddingRight = UDim.new(0, 7),
-            PaddingBottom = UDim.new(0, 8),
-        })
+        local columnGap = 11
+        local columnWidth = math.floor((683 - columnGap) / 2)
 
-        make("UIListLayout", page, {
-            Padding = UDim.new(0, 9),
-            SortOrder = Enum.SortOrder.LayoutOrder,
+        local function createColumn(x)
+            local column = make("ScrollingFrame", page, {
+                Position = UDim2.fromOffset(x, 0),
+                Size = UDim2.fromOffset(columnWidth, 448),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScrollBarThickness = 2,
+                ScrollBarImageColor3 = P.accent,
+                CanvasSize = UDim2.new(),
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                ScrollingDirection = Enum.ScrollingDirection.Y,
+            })
+
+            make("UIPadding", column, {
+                PaddingLeft = UDim.new(0, 1),
+                PaddingRight = UDim.new(0, 5),
+                PaddingBottom = UDim.new(0, 8),
+            })
+
+            make("UIListLayout", column, {
+                Padding = UDim.new(0, 9),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+            })
+
+            return column
+        end
+
+        local leftColumn = createColumn(0)
+        local rightColumn = createColumn(columnWidth + columnGap)
+
+        local splitLine = make("Frame", page, {
+            Position = UDim2.fromOffset(columnWidth + math.floor(columnGap / 2), 4),
+            Size = UDim2.fromOffset(1, 438),
+            BackgroundColor3 = P.line,
+            BackgroundTransparency = .88,
+            BorderSizePixel = 0,
         })
+        splitLine.ZIndex = 2
 
         pages[name] = page
 
@@ -1251,8 +1279,12 @@ function Library:CreateWindow(cfg)
         local Tab = {
             Window = Window,
             Page = page,
+            LeftColumn = leftColumn,
+            RightColumn = rightColumn,
             Name = name,
             Sections = {},
+            _leftSections = 0,
+            _rightSections = 0,
         }
 
         function Tab:Select()
@@ -1267,22 +1299,45 @@ function Library:CreateWindow(cfg)
                 sectionTitle = sectionTitle .. " · Level " .. tostring(secCfg.Level)
             end
 
-            local card = make("Frame", page, {
+            local requestedSide = secCfg.Position or secCfg.Side or secCfg.Column
+            local sideText = string.lower(tostring(requestedSide or ""))
+            local sectionParent
+            local sideName
+
+            if sideText == "right" or sideText == "2" then
+                sectionParent = rightColumn
+                sideName = "Right"
+                Tab._rightSections += 1
+            elseif sideText == "left" or sideText == "1" then
+                sectionParent = leftColumn
+                sideName = "Left"
+                Tab._leftSections += 1
+            elseif Tab._leftSections <= Tab._rightSections then
+                sectionParent = leftColumn
+                sideName = "Left"
+                Tab._leftSections += 1
+            else
+                sectionParent = rightColumn
+                sideName = "Right"
+                Tab._rightSections += 1
+            end
+
+            local card = make("Frame", sectionParent, {
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = P.card,
-                BackgroundTransparency = .24,
+                BackgroundTransparency = .34,
                 BorderSizePixel = 0,
             })
 
             make("UIStroke", card, {
-                Color = P.accent,
+                Color = P.line,
                 Thickness = 1,
-                Transparency = .48,
+                Transparency = .18,
             })
 
             make("UICorner", card, {
-                CornerRadius = UDim.new(0, 9),
+                CornerRadius = UDim.new(0, 3),
             })
 
             make("UIGradient", card, {
@@ -1299,67 +1354,9 @@ function Library:CreateWindow(cfg)
                 }),
             })
 
-            local cardBeam = make("Frame", card, {
-                Position = UDim2.fromOffset(0, 0),
-                Size = UDim2.new(1, 0, 0, 2),
-                BackgroundColor3 = P.accent2,
-                BackgroundTransparency = .48,
-                BorderSizePixel = 0,
-            })
-
-            make("UIGradient", cardBeam, {
-                Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 1),
-                    NumberSequenceKeypoint.new(.18, .05),
-                    NumberSequenceKeypoint.new(.5, .25),
-                    NumberSequenceKeypoint.new(.82, .05),
-                    NumberSequenceKeypoint.new(1, 1),
-                }),
-            })
-
-            -- Ornamental card joints and double-line header rail.
-            line(card, 8, 6, 38, 1, 0, P.line, .42)
-            diamond(card, 4, 3, 7, P.accent, .18)
-            line(card, 49, 6, 1, 10, 0, P.line, .72)
-
-            local rightJoint = make("Frame", card, {
-                AnchorPoint = Vector2.new(1, 0),
-                Position = UDim2.new(1, -8, 0, 6),
-                Size = UDim2.fromOffset(38, 1),
-                BackgroundColor3 = P.line,
-                BackgroundTransparency = .42,
-                BorderSizePixel = 0,
-            })
-
-            local rightDiamond = make("Frame", card, {
-                AnchorPoint = Vector2.new(1, 0),
-                Position = UDim2.new(1, -4, 0, 3),
-                Size = UDim2.fromOffset(7, 7),
-                Rotation = 45,
-                BackgroundColor3 = P.accent,
-                BackgroundTransparency = .18,
-                BorderSizePixel = 0,
-            })
-
-            local leftRay = make("Frame", card, {
-                Position = UDim2.fromOffset(0, 0),
-                Size = UDim2.fromOffset(2, 23),
-                BackgroundColor3 = P.accent2,
-                BackgroundTransparency = .28,
-                BorderSizePixel = 0,
-            })
-
-            local rightRay = make("Frame", card, {
-                AnchorPoint = Vector2.new(1, 0),
-                Position = UDim2.new(1, 0, 0, 0),
-                Size = UDim2.fromOffset(2, 23),
-                BackgroundColor3 = P.accent,
-                BackgroundTransparency = .38,
-                BorderSizePixel = 0,
-            })
-
-            line(card, 0, 29, 74, 1, 0, P.accent2, .75)
-            line(card, 76, 29, 18, 1, 0, P.accent, .88)
+            -- Compact Linoria-like groupbox header.
+            line(card, 10, 29, 72, 1, 0, P.accent2, .62)
+            diamond(card, 5, 26, 6, P.accent, .34)
 
             make("UIPadding", card, {
                 PaddingTop = UDim.new(0, 10),
@@ -1380,9 +1377,9 @@ function Library:CreateWindow(cfg)
                 0,
                 588,
                 22,
-                15,
-                P.glow,
-                Enum.Font.Antique
+                12,
+                P.bright,
+                Enum.Font.Code
             )
             heading.Size = UDim2.new(1, 0, 0, 22)
 
@@ -1403,6 +1400,7 @@ function Library:CreateWindow(cfg)
             local Section = {
                 Tab = Tab,
                 Card = card,
+                Side = sideName,
             }
 
             function Section:CreateToggle(control)
@@ -1420,7 +1418,7 @@ function Library:CreateWindow(cfg)
                     control.Title or "Toggle",
                     0,
                     0,
-                    420,
+                    205,
                     38,
                     12,
                     Color3.fromRGB(255, 255, 255)
@@ -1665,7 +1663,7 @@ function Library:CreateWindow(cfg)
                     control.Title or "Input",
                     0,
                     0,
-                    330,
+                    150,
                     30,
                     12
                 )
@@ -1673,8 +1671,8 @@ function Library:CreateWindow(cfg)
                 local box = make("TextBox", row, {
                     Text = tostring(current),
                     PlaceholderText = tostring(control.Placeholder or ""),
-                    Size = UDim2.new(0, 240, 0, 28),
-                    Position = UDim2.new(1, -240, 0, 2),
+                    Size = UDim2.new(0, 142, 0, 28),
+                    Position = UDim2.new(1, -142, 0, 2),
                     BackgroundColor3 = P.bg,
                     BorderSizePixel = 0,
                     TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -1764,7 +1762,7 @@ function Library:CreateWindow(cfg)
                     control.Title or "Color",
                     0,
                     0,
-                    338,
+                    150,
                     40,
                     12,
                     Color3.fromRGB(255, 255, 255)
@@ -1773,7 +1771,7 @@ function Library:CreateWindow(cfg)
                 local selector = make("TextButton", row, {
                     AnchorPoint = Vector2.new(1, .5),
                     Position = UDim2.new(1, 0, .5, 0),
-                    Size = UDim2.fromOffset(240, 30),
+                    Size = UDim2.fromOffset(146, 30),
                     BackgroundColor3 = Color3.fromRGB(8, 11, 23),
                     BackgroundTransparency = .02,
                     BorderSizePixel = 0,
@@ -1803,7 +1801,7 @@ function Library:CreateWindow(cfg)
                     colorToHex(current),
                     12,
                     0,
-                    176,
+                    92,
                     30,
                     12,
                     Color3.fromRGB(255, 255, 255)
@@ -1961,7 +1959,7 @@ function Library:CreateWindow(cfg)
                     control.Title or "Slider",
                     0,
                     0,
-                    430,
+                    205,
                     21,
                     12,
                     Color3.fromRGB(255, 255, 255)
@@ -1970,9 +1968,9 @@ function Library:CreateWindow(cfg)
                 local valueLabel = text(
                     holder,
                     tostring(value) .. suffix,
-                    445,
+                    208,
                     0,
-                    143,
+                    92,
                     21,
                     11,
                     Color3.fromRGB(255, 255, 255)
@@ -2130,7 +2128,7 @@ function Library:CreateWindow(cfg)
                     control.Title or "Keybind",
                     0,
                     0,
-                    420,
+                    205,
                     30,
                     12
                 )
@@ -2370,6 +2368,18 @@ function Library:CreateWindow(cfg)
 
             table.insert(Tab.Sections, Section)
             return Section
+        end
+
+        function Tab:CreateLeftSection(secCfg)
+            secCfg = copy(secCfg or {})
+            secCfg.Position = "Left"
+            return self:CreateSection(secCfg)
+        end
+
+        function Tab:CreateRightSection(secCfg)
+            secCfg = copy(secCfg or {})
+            secCfg.Position = "Right"
+            return self:CreateSection(secCfg)
         end
 
         table.insert(tabs, Tab)
