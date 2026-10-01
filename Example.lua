@@ -4,240 +4,201 @@ local Leech = loadstring(game:HttpGet(
 
 local Window = Leech:CreateWindow({
     Title = "LEECH",
-    SubTitle = "D E E P W O K E N",
-    CurrentPage = "COMBAT",
-    ProductName = "LEECH",
+    SubTitle = "UNIVERSAL INTERFACE",
+    Version = "EXAMPLE BUILD",
+    Theme = "LeechRain",
 })
 
-local Tabs = {
-    Combat = Window:CreateTab({Title = "Combat", Index = 1}),
-    Breakers = Window:CreateTab({Title = "Breakers", Index = 2}),
-    Automation = Window:CreateTab({Title = "Automation", Index = 3}),
-    Targeting = Window:CreateTab({Title = "Targeting", Index = 4}),
-    Vision = Window:CreateTab({Title = "Vision", Index = 5}),
-    Settings = Window:CreateTab({Title = "Settings", Index = 6}),
-}
-
-local Base = Tabs.Combat:CreateSection({
-    Title = "Autoparry",
-    Level = 1,
-    Description = "Base autoparry uses attack timings and range. Prediction levels below add validation.",
+local Main = Window:CreateTab({
+    Title = "Main",
+    Index = 1,
+    Description = "Primary script controls and live state",
 })
 
-Base:CreateToggle({
-    Title = "Autoparry",
+local Combat = Window:CreateTab({
+    Title = "Combat",
+    Index = 2,
+    Description = "Combat-related options for your script",
+})
+
+local Visuals = Window:CreateTab({
+    Title = "Visuals",
+    Index = 3,
+    Description = "Visual overlays and display preferences",
+})
+
+local Settings = Window:CreateTab({
+    Title = "Settings",
+    Index = 4,
+    Description = "Configuration, keybinds, and diagnostics",
+})
+
+local General = Main:CreateSection({
+    Title = "General",
+    Description = "Every control is callback-driven, so this library can be used by any script.",
+})
+
+General:CreateToggle({
+    Title = "Enabled",
     Default = true,
     Callback = function(value)
-        print("Autoparry:", value)
+        Window:SetStatus(value and "ACTIVE" or "IDLE")
+        print("Enabled:", value)
     end,
 })
 
-local Air = Tabs.Combat:CreateSection({
-    Title = "Air Prediction",
-    Level = 2,
-    Description = "Uses normal game direction checks. No AI runtime is needed for this level.",
-})
-
-local AirToggle = Air:CreateToggle({
-    Title = "Air Prediction",
-    Default = true,
-    Callback = function(value)
-        print("Air Prediction:", value)
-    end,
-})
-
-Air:CreateSlider({
-    Title = "Facing enter angle · degrees",
-    Range = {0, 180},
+General:CreateSlider({
+    Title = "Speed",
+    Range = {0, 100},
     Default = 50,
+    Increment = 1,
+    Suffix = "%",
     Callback = function(value)
-        print("Facing enter angle:", value)
+        print("Speed:", value)
     end,
 })
 
-Air:CreateSlider({
-    Title = "Facing exit angle · degrees",
-    Range = {0, 180},
-    Default = 60,
-    Callback = function(value)
-        print("Facing exit angle:", value)
-    end,
-})
-
-local Visual = Tabs.Combat:CreateSection({
-    Title = "Visual Prediction",
-    Level = 3,
-    Description = "Requires Level 2. Adds fresh, confident AI facing validation to the normal direction checks.",
-})
-
-Visual:CreateToggle({
-    Title = "Visual Prediction",
-    Default = false,
-    Requirement = function()
-        return AirToggle.Value:Get()
-    end,
-    OnLocked = function()
-        Window:SetStatus("Enable Air Prediction / Level 2 first")
-    end,
-    Callback = function(value)
-        print("Visual Prediction:", value)
-    end,
-})
-
-Visual:CreateInput({
-    Title = "Minimum confidence",
-    Default = 0.72,
-    Numeric = true,
-    Min = 0,
-    Max = 1,
-    Callback = function(value)
-        print("Confidence:", value)
-    end,
-})
-
-Visual:CreateInput({
-    Title = "Maximum result age · seconds",
-    Default = 0.25,
-    Numeric = true,
-    Min = 0,
-    Callback = function(value)
-        print("Result age:", value)
-    end,
-})
-
-local BaseFeatures = Tabs.Combat:CreateSection({
-    Title = "Base combat features",
-    Description = "Breakers and defensive dodge are independent of the AI model.",
-})
-
-BaseFeatures:CreateToggle({
-    Title = "Autoparry breaker",
-    Default = false,
-    Callback = function(value)
-        print("Autoparry breaker:", value)
-    end,
-})
-
-BaseFeatures:CreateToggle({
-    Title = "Anti-autoparry breaker",
-    Default = true,
-    Callback = function(value)
-        print("Anti-autoparry breaker:", value)
-    end,
-})
-
-BaseFeatures:CreateToggle({
-    Title = "Defensive dodge",
-    Default = true,
-    Callback = function(value)
-        print("Defensive dodge:", value)
-    end,
-})
-
-local BreakerSection = Tabs.Breakers:CreateSection({
-    Title = "Offensive breaker",
-    Description = "Cycle controls use the same full-width row style as the original Leech HUD.",
-})
-
-BreakerSection:CreateDropdown({
+General:CreateDropdown({
     Title = "Mode",
-    Options = {"Standard", "Experimental", "Mira"},
-    Selected = {"Standard"},
+    Options = {"Balanced", "Aggressive", "Safe"},
+    Selected = {"Balanced"},
     Callback = function(selected)
         print("Mode:", selected[1])
     end,
 })
 
-BreakerSection:CreateInput({
-    Title = "Decoys per second",
-    Default = 8,
-    Numeric = true,
-    Min = 0,
-    Callback = function(value)
-        print("Rate:", value)
+local Status = Main:CreateSection({
+    Title = "Runtime",
+    Description = "Labels, progress bars, paragraphs, and notifications are available for live script state.",
+})
+
+local RuntimeLabel = Status:CreateLabel("Runtime: ready")
+
+local Progress = Status:CreateProgress({
+    Title = "Task progress",
+    Default = 0.35,
+})
+
+Status:CreateButton({
+    Title = "Demo notification",
+    Callback = function()
+        Window:Notify({
+            Title = "Leech UI",
+            Content = "This notification works from any script callback.",
+            Duration = 3,
+        })
     end,
 })
 
-local AutomationSection = Tabs.Automation:CreateSection({
-    Title = "Combat assistance",
-    Description = "Example UI controls using the original Leech card and toggle code.",
+Status:CreateButton({
+    Title = "Advance progress",
+    Callback = function()
+        local nextValue = math.clamp(Progress.Value:Get() + 0.1, 0, 1)
+        Progress.Value:Set(nextValue)
+        RuntimeLabel.Value:Set("Runtime: progress updated")
+    end,
 })
 
-AutomationSection:CreateToggle({
-    Title = "Auto helper",
+local CombatSection = Combat:CreateSection({
+    Title = "Combat controls",
+    Level = 1,
+    Description = "These are only UI examples. Connect the callbacks to your own logic.",
+})
+
+CombatSection:CreateToggle({
+    Title = "Primary feature",
     Default = false,
     Callback = function(value)
-        print("Auto helper:", value)
+        print("Primary feature:", value)
     end,
 })
 
-local TargetingSection = Tabs.Targeting:CreateSection({
-    Title = "Threat sources & selection",
-})
-
-TargetingSection:CreateToggle({
-    Title = "Players",
-    Default = true,
-    Callback = function(value)
-        print("Players:", value)
-    end,
-})
-
-TargetingSection:CreateToggle({
-    Title = "NPCs",
-    Default = true,
-    Callback = function(value)
-        print("NPCs:", value)
-    end,
-})
-
-TargetingSection:CreateDropdown({
-    Title = "Selection",
-    Options = {"Distance", "FOV"},
-    Selected = {"Distance"},
-    Callback = function(selected)
-        print("Selection:", selected[1])
-    end,
-})
-
-local VisionSection = Tabs.Vision:CreateSection({
-    Title = "Vision",
-    Description = "Status labels and full-width buttons retain the original Leech spacing.",
-})
-
-local Runtime = VisionSection:CreateLabel("Runtime: OFFLINE    Backbone: NOT READY")
-VisionSection:CreateButton({
-    Title = "Set up vision",
-    Callback = function()
-        Runtime.Value:Set("Runtime: demo action pressed")
-    end,
-})
-
-local SettingsSection = Tabs.Settings:CreateSection({
-    Title = "Timing & persistence",
-})
-
-SettingsSection:CreateInput({
-    Title = "Timing offset · seconds",
-    Default = 0,
+CombatSection:CreateInput({
+    Title = "Range",
+    Default = 120,
     Numeric = true,
+    Min = 0,
+    Max = 1000,
     Callback = function(value)
-        print("Timing offset:", value)
+        print("Range:", value)
     end,
 })
 
-SettingsSection:CreateButton({
+CombatSection:CreateSeparator({Title = "Advanced"})
+
+CombatSection:CreateDropdown({
+    Title = "Targets",
+    Options = {"Players", "NPCs", "Projectiles"},
+    Selected = {"Players", "NPCs"},
+    Multi = true,
+    Callback = function(selected)
+        print("Selected targets:", table.concat(selected, ", "))
+    end,
+})
+
+local VisualSection = Visuals:CreateSection({
+    Title = "Overlay",
+    Description = "The default theme blends Leech purple with Project Rain's clean card layout.",
+})
+
+VisualSection:CreateToggle({
+    Title = "Show overlay",
+    Default = true,
+    Callback = function(value)
+        print("Overlay:", value)
+    end,
+})
+
+VisualSection:CreateSlider({
+    Title = "Opacity",
+    Range = {0, 1},
+    Default = 0.8,
+    Increment = 0.05,
+    Callback = function(value)
+        print("Opacity:", value)
+    end,
+})
+
+VisualSection:CreateParagraph({
+    Title = "Design",
+    Content = "The background is built entirely with native Roblox UI: layered gradients, architectural grid lines, diagonal rain streaks, Leech tracery, and accent nodes.",
+})
+
+local Config = Settings:CreateSection({
+    Title = "Configuration",
+})
+
+Config:CreateKeybind({
+    Title = "Example keybind",
+    Default = Enum.KeyCode.K,
+    Callback = function(key)
+        print("New key:", key.Name)
+    end,
+})
+
+Config:CreateInput({
+    Title = "Profile name",
+    Default = "Default",
+    Placeholder = "Profile",
+    Callback = function(value)
+        print("Profile:", value)
+    end,
+})
+
+Config:CreateButton({
     Title = "Save settings",
     Callback = function()
-        Window:SetStatus("Settings saved")
+        Window:SetStatus("SAVED")
+        Window:Notify({
+            Title = "Settings",
+            Content = "Example save callback fired.",
+        })
     end,
 })
 
-Window:SetFooter({
-    parry = 0,
-    dodge = 0,
-    filter = 0,
-    errors = 0,
-    line1 = "Ready",
-    line2 = "Leech UI library loaded",
+Config:CreateParagraph({
+    Title = "Global window hotkeys",
+    Content = "RightShift toggles visibility. F9 unloads the UI. There is no pause system.",
 })
+
+Window:SetStatus("READY")
