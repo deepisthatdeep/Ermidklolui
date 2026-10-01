@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=palette-retention-20261001"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=four-color-controls-20261001"
 ))()
 
 local Window = Library:CreateWindow({
@@ -300,30 +300,31 @@ local ColorSection = Settings:CreateSection({
     Position = "Right",
 })
 
-local ColorControls = {}
 local ColorRows = {
-    {"Background", "bg"},
-    {"Panel", "card"},
-    {"Border", "line"},
-    {"Primary Accent", "accent"},
-    {"Secondary Accent", "accent2"},
-    {"Glow", "glow"},
-    {"Highlight Text", "bright"},
-    {"Text", "text"},
-    {"Muted Text", "muted"},
+    {"Background", {"bg"}},
+    {"Panels", {"card"}},
+    {"Accent", {"accent", "line", "accent2", "glow"}},
+    {"Text", {"text", "bright", "muted"}},
 }
 
 for _, row in ipairs(ColorRows) do
-    local label, key = row[1], row[2]
-
-    ColorControls[key] = ColorSection:CreateColorInput({
-        Title = label,
-        PaletteKey = key,
-        Default = Window:GetPaletteColor(key),
-        Callback = function(color)
+    ColorSection:CreateColorInput({
+        Title = row[1],
+        PaletteKeys = row[2],
+        Callback = function()
             Window:SetStatus("N/A")
         end,
     })
+end
+
+-- Older saved palettes may contain different colors within the new groups.
+local function normalizeColorGroups()
+    local colors = {}
+    for _, row in ipairs(ColorRows) do
+        local color = Window:GetPaletteColor(row[2][1])
+        for _, key in ipairs(row[2]) do colors[key] = color end
+    end
+    Window:SetPaletteColors(colors)
 end
 
 ColorSection:CreateButton({
@@ -339,6 +340,7 @@ ColorSection:CreateButton({
     Title = "Load Colors",
     Callback = function()
         local ok = Window:LoadPalette()
+        if ok then normalizeColorGroups() end
 
         Window:SetStatus("N/A")
         Window:SetFooter("N/A", "N/A")
