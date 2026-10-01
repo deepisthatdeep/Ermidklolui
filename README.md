@@ -334,15 +334,12 @@ Progress values are normalized from `0` to `1`.
 
 The Settings page includes an unlabeled groupbox that lets you edit palette channels individually. Clicking any color field opens a popup HSV picker with a saturation/value square, hue strip, live preview, hex field, and Select button.
 
-- Background
-- Panel
-- Border
-- Primary accent
-- Secondary accent
-- Glow
-- Highlight text
-- Text
-- Muted text
+- **Background** — window background.
+- **Panels** — groupboxes and control surfaces.
+- **Accent** — borders, both accent channels, and glow/constellation details.
+- **Text** — regular, highlighted, and muted text.
+
+The showcase has four pickers. Each grouped selection updates its channels together. Loading an older palette uses its primary accent and text colors for the corresponding groups.
 
 The library exposes the same controls programmatically:
 
@@ -384,7 +381,7 @@ print(Accent:GetHex())
 Accent:Close() -- closes only this control
 ```
 
-`PaletteKey` binds the control to one palette channel. Programmatic edits, load, and reset synchronize its swatch without firing its callback. Omit `PaletteKey` for an independent color value. `Accent:SetColor(color, false)` updates a standalone control silently. Picker drafts commit with Select; closing or switching pickers cancels the draft.
+`PaletteKeys = {"accent", "line", "accent2", "glow"}` binds one picker to a group, with the first key determining its displayed color. `PaletteKey` binds the control to one palette channel. Programmatic edits, load, and reset synchronize its swatch without firing its callback. Omit `PaletteKey` for an independent color value. `Accent:SetColor(color, false)` updates a standalone control silently. Picker drafts commit with Select; closing or switching pickers cancels the draft.
 
 ## Hotkeys
 
