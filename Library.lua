@@ -416,21 +416,95 @@ function Library:CreateWindow(cfg)
         return holder
     end
 
-    for i = 0, 5 do
-        local x = 24 + i * 153
-        line(art, x, 177, 1, 360, 0, P.line, .78)
-        line(art, x + 112, 177, 1, 360, 0, P.line, .78)
-        line(art, x - 13, 132, 80, 1, -48, P.line, .65)
-        line(art, x + 44, 132, 80, 1, 48, P.line, .65)
-        line(art, x + 55, 102, 1, 435, 0, P.line, .86)
+    -- Celestial field: circular halos, orbital arcs, star nodes, and constellation links.
+    -- This replaces the old rigid lattice/grid while keeping the original frame language.
+    local function dot(parent, x, y, size, color, transparency)
+        local node = make("Frame", parent, {
+            Position = UDim2.fromOffset(x, y),
+            Size = UDim2.fromOffset(size or 3, size or 3),
+            BackgroundColor3 = color or P.glow,
+            BackgroundTransparency = transparency or 0,
+            BorderSizePixel = 0,
+        })
+
+        make("UICorner", node, {
+            CornerRadius = UDim.new(1, 0),
+        })
+
+        return node
     end
 
+    local function orbitArc(parent, cx, cy, radius, startAngle, endAngle, segments, color, transparency, thickness)
+        segments = math.max(4, segments or 18)
+        local step = (endAngle - startAngle) / segments
+
+        for index = 0, segments - 1 do
+            local a0 = math.rad(startAngle + step * index)
+            local a1 = math.rad(startAngle + step * (index + 1))
+            local x0 = cx + math.cos(a0) * radius
+            local y0 = cy + math.sin(a0) * radius
+            local x1 = cx + math.cos(a1) * radius
+            local y1 = cy + math.sin(a1) * radius
+            local dx = x1 - x0
+            local dy = y1 - y0
+            local length = math.sqrt(dx * dx + dy * dy)
+            local angle = math.deg(math.atan2(dy, dx))
+
+            line(
+                parent,
+                x0,
+                y0,
+                length + 1,
+                thickness or 1,
+                angle,
+                color or P.line,
+                transparency or .9
+            )
+        end
+    end
+
+    local function constellation(parent, points, color, transparency)
+        for index, point in ipairs(points) do
+            local nodeColor = point[4] or color or P.glow
+            local nodeSize = point[3] or 3
+
+            dot(
+                parent,
+                point[1] - nodeSize / 2,
+                point[2] - nodeSize / 2,
+                nodeSize,
+                nodeColor,
+                math.max(0, (transparency or .7) - .18)
+            )
+
+            if index > 1 and point[5] ~= false then
+                local previous = points[index - 1]
+                local dx = point[1] - previous[1]
+                local dy = point[2] - previous[2]
+                local length = math.sqrt(dx * dx + dy * dy)
+                local angle = math.deg(math.atan2(dy, dx))
+
+                line(
+                    parent,
+                    previous[1],
+                    previous[2],
+                    length,
+                    1,
+                    angle,
+                    color or P.line,
+                    transparency or .9
+                )
+            end
+        end
+    end
+
+    -- Keep only quiet perimeter structure.
     for _, x in ipairs({8, 930}) do
-        line(art, x, 8, 1, 594, 0, P.line, .1)
+        line(art, x, 8, 1, 594, 0, P.line, .2)
     end
 
     for _, y in ipairs({8, 600}) do
-        line(art, 8, y, 922, 1, 0, P.line, .1)
+        line(art, 8, y, 922, 1, 0, P.line, .2)
     end
 
     for _, cornerData in ipairs({
@@ -439,273 +513,183 @@ function Library:CreateWindow(cfg)
         {15, 533},
         {815, 533},
     }) do
-        line(art, cornerData[1], cornerData[2], 20, 1, 0, P.accent, .15)
-        line(art, cornerData[1], cornerData[2], 1, 20, 0, P.accent, .15)
-        line(art, cornerData[1] + 5, cornerData[2] + 5, 8, 8, 45, P.line, .1)
+        line(art, cornerData[1], cornerData[2], 20, 1, 0, P.accent, .28)
+        line(art, cornerData[1], cornerData[2], 1, 20, 0, P.accent, .28)
+        diamond(art, cornerData[1] + 5, cornerData[2] + 5, 7, P.line, .35)
     end
 
-    line(art, 89, 83, 1, 17, 0, P.accent, .2)
-    line(art, 85, 96, 8, 8, 45, P.accent, 0)
-    line(art, 34, 89, 40, 1, 0, P.line, .2)
-    line(art, 105, 89, 40, 1, 0, P.line, .2)
+    -- Header constellation crown.
+    orbitArc(art, 421, 42, 66, 205, 335, 16, P.accent2, .78, 1)
+    orbitArc(art, 421, 42, 48, 202, 338, 14, P.accent, .84, 1)
+    diamond(art, 417, 28, 8, P.accent, .12)
+    dot(art, 363, 54, 3, P.glow, .45)
+    dot(art, 477, 54, 3, P.glow, .45)
 
-    -- Layered frame-within-frame ornamentation.
-    for inset = 0, 2 do
-        local offset = 13 + inset * 5
-        local alpha = .52 + inset * .11
+    constellation(art, {
+        {352, 47, 3, P.accent2},
+        {383, 31, 4, P.glow},
+        {421, 28, 5, P.accent},
+        {459, 31, 4, P.glow},
+        {490, 47, 3, P.accent2},
+    }, P.line, .78)
 
-        line(art, offset, offset, 940 - offset * 2, 1, 0, P.line, alpha)
-        line(art, offset, 610 - offset - 1, 940 - offset * 2, 1, 0, P.line, alpha)
-        line(art, offset, offset, 1, 610 - offset * 2, 0, P.line, alpha)
-        line(art, 850 - offset - 1, offset, 1, 610 - offset * 2, 0, P.line, alpha)
-    end
+    -- Large upper-left halo group in the main content field.
+    ring(art, 225, 104, 154, P.accent2, .91, 1)
+    ring(art, 247, 126, 110, P.line, .88, 1)
+    ring(art, 270, 149, 64, P.accent, .84, 1)
+    orbitArc(art, 302, 181, 93, 18, 152, 20, P.accent2, .84, 1)
+    orbitArc(art, 302, 181, 76, 196, 322, 18, P.accent, .88, 1)
+    dot(art, 299, 178, 6, P.glow, .5)
+    diamond(art, 345, 116, 5, P.accent2, .42)
 
-    -- Crown detail above the content header.
-    line(art, 262, 34, 126, 1, 0, P.line, .35)
-    line(art, 462, 34, 126, 1, 0, P.line, .35)
-    line(art, 388, 34, 37, 1, -42, P.accent, .18)
-    line(art, 425, 34, 37, 1, 42, P.accent, .18)
-    diamond(art, 421, 28, 8, P.accent, .05)
-    diamond(art, 397, 31, 5, P.line, .28)
-    diamond(art, 445, 31, 5, P.line, .28)
+    constellation(art, {
+        {215, 126, 3, P.glow},
+        {248, 112, 4, P.accent2},
+        {281, 136, 3, P.glow},
+        {315, 120, 5, P.accent},
+        {350, 145, 3, P.glow},
+        {379, 127, 3, P.accent2},
+    }, P.line, .88)
 
-    -- Rose-window motif centered behind the main content.
-    local roseX, roseY = 673, 287
-    ring(art, roseX, roseY, 104, P.line, .78, 1)
-    ring(art, roseX + 12, roseY + 12, 80, P.line, .82, 1)
-    ring(art, roseX + 31, roseY + 31, 42, P.accent, .84, 1)
-
-    for angle = 0, 150, 30 do
-        line(
-            art,
-            roseX + 51,
-            roseY + 17,
-            1,
-            70,
-            angle,
-            P.line,
-            .84
-        )
-    end
-
-    diamond(art, roseX + 48, roseY + 48, 8, P.accent, .72)
-
-    -- Sidebar spine and ornamental joints.
-    line(art, 18, 102, 1, 282, 0, P.line, .32)
-    line(art, 164, 102, 1, 282, 0, P.line, .58)
-
-    for i = 0, 6 do
-        local y = 102 + i * 46
-        diamond(art, 14, y - 3, 7, i == 0 and P.accent or P.line, .2)
-        line(art, 22, y, 11, 1, 0, P.line, .5)
-    end
-
-    -- Footer rail and suspended center ornament.
-    line(art, 186, 488, 642, 1, 0, P.line, .36)
-    line(art, 186, 491, 642, 1, 0, P.line, .78)
-    diamond(art, 505, 485, 7, P.accent, .18)
-    line(art, 509, 492, 1, 27, 0, P.line, .72)
-    diamond(art, 506, 518, 6, P.line, .42)
-
-    -- Small repeating lancets behind the lower content field.
-    for x = 205, 790, 73 do
-        line(art, x, 453, 24, 1, -53, P.line, .86)
-        line(art, x + 17, 453, 24, 1, 53, P.line, .86)
-        line(art, x + 9, 439, 1, 37, 0, P.line, .9)
-    end
-
-    -- Fine constellation mesh.
-    local starPoints = {
-        {212, 104}, {259, 137}, {304, 96}, {349, 151}, {395, 117},
-        {448, 143}, {493, 101}, {543, 132}, {591, 94}, {638, 148},
-        {690, 111}, {736, 139}, {783, 99}, {225, 214}, {283, 246},
-        {338, 205}, {402, 258}, {458, 222}, {517, 263}, {577, 211},
-        {641, 250}, {704, 207}, {766, 257}, {231, 359}, {296, 393},
-        {354, 349}, {419, 402}, {482, 356}, {548, 393}, {613, 347},
-        {679, 399}, {742, 351}, {790, 391},
-    }
-
-    for index, point in ipairs(starPoints) do
-        local size = index % 5 == 0 and 4 or 2
-        local color = index % 3 == 0 and P.accent2
-            or index % 2 == 0 and P.accent
-            or P.glow
-
-        diamond(art, point[1], point[2], size, color, .54 + (index % 4) * .07)
-
-        if index > 1 and index % 4 ~= 0 then
-            local previous = starPoints[index - 1]
-            local dx = point[1] - previous[1]
-            local dy = point[2] - previous[2]
-            local length = math.sqrt(dx * dx + dy * dy)
-            local angle = math.deg(math.atan2(dy, dx))
-
-            line(
-                art,
-                previous[1] + 2,
-                previous[2] + 2,
-                length,
-                1,
-                angle,
-                index % 2 == 0 and P.accent2 or P.line,
-                .9
-            )
-        end
-    end
-
-    -- Orbital instrument / halo structure behind the right side.
+    -- Main right-side orrery: all circular, no cross-grid.
     local orbit = make("Frame", art, {
-        Position = UDim2.fromOffset(615, 168),
-        Size = UDim2.fromOffset(184, 184),
+        Name = "CelestialOrrery",
+        Position = UDim2.fromOffset(610, 135),
+        Size = UDim2.fromOffset(235, 235),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     })
 
-    for _, ringData in ipairs({
-        {0, 0, 184, P.accent2, .84},
-        {14, 14, 156, P.line, .72},
-        {33, 33, 118, P.accent, .82},
-        {54, 54, 76, P.line, .78},
-        {72, 72, 40, P.glow, .88},
-    }) do
-        ring(
-            orbit,
-            ringData[1],
-            ringData[2],
-            ringData[3],
-            ringData[4],
-            ringData[5],
-            1
-        )
-    end
+    ring(orbit, 5, 5, 225, P.accent2, .86, 1)
+    ring(orbit, 24, 24, 187, P.line, .83, 1)
+    ring(orbit, 48, 48, 139, P.accent, .87, 1)
+    ring(orbit, 77, 77, 81, P.line, .82, 1)
+    ring(orbit, 101, 101, 33, P.glow, .82, 1)
+
+    orbitArc(orbit, 117, 117, 102, 16, 124, 20, P.accent2, .64, 1)
+    orbitArc(orbit, 117, 117, 102, 196, 304, 20, P.accent, .68, 1)
+    orbitArc(orbit, 117, 117, 73, 116, 250, 18, P.line, .73, 1)
+    orbitArc(orbit, 117, 117, 51, 286, 414, 16, P.glow, .8, 1)
 
     for angle = 0, 330, 30 do
         local radians = math.rad(angle)
-        local cx, cy = 92, 92
-        local radius = 86
-        local x = cx + math.cos(radians) * radius
-        local y = cy + math.sin(radians) * radius
+        local radius = angle % 60 == 0 and 105 or 91
+        local x = 117 + math.cos(radians) * radius
+        local y = 117 + math.sin(radians) * radius
+        local size = angle % 90 == 0 and 5 or 3
 
-        diamond(
+        dot(
             orbit,
-            x - 2,
-            y - 2,
-            angle % 60 == 0 and 5 or 3,
-            angle % 90 == 0 and P.accent2 or P.accent,
-            .48
+            x - size / 2,
+            y - size / 2,
+            size,
+            angle % 60 == 0 and P.accent2 or P.glow,
+            angle % 60 == 0 and .36 or .55
         )
     end
 
-    line(orbit, 18, 91, 148, 1, 0, P.line, .82)
-    line(orbit, 91, 18, 1, 148, 0, P.line, .82)
-    line(orbit, 39, 39, 148, 1, 45, P.line, .9)
-    line(orbit, 39, 144, 148, 1, -45, P.line, .9)
+    diamond(orbit, 113, 113, 8, P.glow, .34)
+    dot(orbit, 72, 52, 4, P.accent, .38)
+    dot(orbit, 170, 156, 4, P.accent2, .38)
 
-    -- Refracted diagonal light channels.
-    for i = 0, 7 do
-        local y = 116 + i * 48
-        line(
-            art,
-            182,
-            y,
-            105,
-            1,
-            -12,
-            i % 2 == 0 and P.accent2 or P.accent,
-            .91
-        )
-        line(
-            art,
-            714,
-            y + 17,
-            105,
-            1,
-            12,
-            i % 2 == 0 and P.accent or P.accent2,
-            .93
-        )
-    end
+    constellation(orbit, {
+        {36, 154, 3, P.glow},
+        {65, 130, 4, P.accent2},
+        {96, 145, 3, P.glow},
+        {126, 126, 5, P.accent},
+        {156, 142, 3, P.glow},
+        {190, 118, 4, P.accent2},
+    }, P.line, .86)
 
-    -- Micro-grid only in the content field.
-    for x = 194, 820, 31 do
-        line(art, x, 78, 1, 400, 0, P.line, .965)
-    end
+    -- Lower halo group replacing the old lower lancet/grid region.
+    local lowerHalo = make("Frame", art, {
+        Name = "LowerHalo",
+        Position = UDim2.fromOffset(315, 326),
+        Size = UDim2.fromOffset(300, 165),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
 
-    for y = 88, 470, 27 do
-        line(art, 188, y, 634, 1, 0, P.line, .97)
-    end
+    ring(lowerHalo, 8, 0, 164, P.accent, .9, 1)
+    ring(lowerHalo, 29, 21, 122, P.line, .86, 1)
+    ring(lowerHalo, 54, 46, 72, P.accent2, .86, 1)
+    orbitArc(lowerHalo, 90, 82, 76, 210, 340, 18, P.accent2, .72, 1)
+    orbitArc(lowerHalo, 90, 82, 57, 18, 150, 18, P.accent, .78, 1)
 
-    -- Left-side vertical light fibers.
-    for i = 0, 4 do
-        line(
-            art,
-            27 + i * 27,
-            103,
-            1,
-            282,
-            0,
-            i % 2 == 0 and P.accent2 or P.accent,
-            .9 + i * .012
-        )
-    end
+    ring(lowerHalo, 175, 23, 112, P.line, .9, 1)
+    orbitArc(lowerHalo, 231, 79, 51, 36, 194, 18, P.accent2, .78, 1)
+    orbitArc(lowerHalo, 231, 79, 37, 212, 366, 16, P.accent, .82, 1)
+    dot(lowerHalo, 226, 74, 7, P.glow, .47)
 
-    -- Small crescent-like cluster built from offset rings.
+    constellation(lowerHalo, {
+        {12, 118, 3, P.glow},
+        {49, 103, 4, P.accent2},
+        {83, 122, 3, P.glow},
+        {124, 105, 4, P.accent},
+        {163, 127, 3, P.glow},
+        {203, 108, 4, P.accent2},
+        {245, 126, 3, P.glow},
+        {286, 107, 4, P.accent},
+    }, P.line, .88)
+
+    -- Left sidebar constellation spine.
+    orbitArc(art, 91, 221, 59, 92, 268, 18, P.accent2, .87, 1)
+    orbitArc(art, 91, 221, 42, 274, 446, 16, P.accent, .9, 1)
+
+    constellation(art, {
+        {31, 118, 3, P.glow},
+        {57, 150, 4, P.accent2},
+        {38, 190, 3, P.glow},
+        {66, 228, 4, P.accent},
+        {43, 267, 3, P.glow},
+        {70, 306, 4, P.accent2},
+        {46, 346, 3, P.glow},
+        {78, 381, 4, P.accent},
+    }, P.line, .89)
+
+    -- Crescent / moon cluster.
     local crescentHolder = make("Frame", art, {
-        Position = UDim2.fromOffset(54, 309),
-        Size = UDim2.fromOffset(82, 82),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-    })
-    ring(crescentHolder, 0, 0, 82, P.accent2, .72, 1)
-    ring(crescentHolder, 13, 5, 72, P.bg, .08, 12)
-    diamond(crescentHolder, 13, 54, 5, P.accent, .28)
-    diamond(crescentHolder, 48, 11, 4, P.glow, .52)
-
-    -- Large refractive lattice: intentionally obvious, not subtle.
-    local lattice = make("Frame", art, {
-        Name = "RefractionLattice",
-        Position = UDim2.fromOffset(205, 72),
-        Size = UDim2.fromOffset(710, 470),
+        Position = UDim2.fromOffset(73, 357),
+        Size = UDim2.fromOffset(88, 88),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     })
 
-    for i = 0, 8 do
-        local x = 24 + i * 82
-        line(lattice, x, 18, 1, 426, 0, i % 2 == 0 and P.accent2 or P.accent, .93)
-        line(lattice, x - 36, 92, 112, 1, -54, P.line, .9)
-        line(lattice, x - 36, 92, 112, 1, 54, P.line, .9)
+    ring(crescentHolder, 0, 0, 88, P.accent2, .76, 1)
+    ring(crescentHolder, 15, 6, 76, P.bg, .12, 13)
+    orbitArc(crescentHolder, 44, 44, 38, 105, 256, 14, P.accent, .62, 1)
+    dot(crescentHolder, 14, 59, 5, P.accent, .3)
+    dot(crescentHolder, 52, 10, 4, P.glow, .42)
+
+    -- Sparse star scatter; deterministic positions keep the artwork stable.
+    local starScatter = {
+        {196, 92, 2}, {228, 249, 3}, {267, 294, 2}, {326, 91, 2},
+        {391, 173, 3}, {438, 112, 2}, {473, 277, 3}, {515, 191, 2},
+        {556, 96, 3}, {585, 292, 2}, {621, 408, 3}, {669, 103, 2},
+        {713, 418, 3}, {760, 389, 2}, {801, 94, 3}, {829, 454, 2},
+        {245, 423, 3}, {285, 467, 2}, {414, 451, 3}, {523, 434, 2},
+        {572, 468, 3}, {681, 462, 2}, {747, 479, 3}, {805, 440, 2},
+    }
+
+    for index, star in ipairs(starScatter) do
+        local color = index % 5 == 0 and P.accent2
+            or index % 3 == 0 and P.accent
+            or P.glow
+
+        dot(
+            art,
+            star[1],
+            star[2],
+            star[3],
+            color,
+            .5 + (index % 4) * .08
+        )
     end
 
-    for i = 0, 5 do
-        local y = 52 + i * 74
-        line(lattice, 14, y, 676, 1, 0, P.line, .94)
-        diamond(lattice, 8 + (i % 2) * 664, y - 3, 7, i % 2 == 0 and P.accent2 or P.accent, .36)
-    end
-
-    local core = make("Frame", lattice, {
-        Position = UDim2.fromOffset(458, 96),
-        Size = UDim2.fromOffset(190, 190),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-    })
-
-    ring(core, 0, 0, 190, P.accent2, .72, 1)
-    ring(core, 16, 16, 158, P.accent, .76, 1)
-    ring(core, 39, 39, 112, P.line, .68, 1)
-    ring(core, 66, 66, 58, P.glow, .82, 1)
-
-    for angle = 0, 315, 45 do
-        local rad = math.rad(angle)
-        local x = 95 + math.cos(rad) * 82
-        local y = 95 + math.sin(rad) * 82
-        diamond(core, x - 3, y - 3, 6, angle % 90 == 0 and P.accent2 or P.accent, .12)
-        line(core, 95, 95, 78, 1, angle, P.line, .82)
-    end
-
-    line(lattice, 417, 191, 82, 1, 0, P.accent2, .55)
-    line(lattice, 607, 191, 70, 1, 0, P.accent, .58)
-    diamond(lattice, 548, 187, 9, P.glow, .28)
+    -- Footer rail remains as the only strong straight guide across the content.
+    line(art, 186, 488, 642, 1, 0, P.line, .55)
+    diamond(art, 505, 485, 7, P.accent, .22)
+    dot(art, 509, 512, 4, P.glow, .5)
 
     local contentVeil = make("Frame", window, {
         Name = "ContentGlass",
