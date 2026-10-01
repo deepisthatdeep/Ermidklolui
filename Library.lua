@@ -207,7 +207,9 @@ function Library:CreateWindow(cfg)
     local C = {}
     for key in pairs(P) do C[key] = {paletteKey = key} end
     local paletteControls = {}
-    local paletteBindings = setmetatable({}, {__mode = "k"})
+    -- Roblox can collect Lua wrappers even while their Instances remain parented.
+    -- Retain bindings strongly until a target is removed or the window is destroyed.
+    local paletteBindings = {}
 
     local function themePoint(time, value)
         return {Time = time, Value = value}
@@ -273,6 +275,8 @@ function Library:CreateWindow(cfg)
         for object, properties in pairs(paletteBindings) do
             if object.Parent then
                 for property, value in pairs(properties) do object[property] = resolve(value) end
+            else
+                paletteBindings[object] = nil
             end
         end
     end
@@ -1075,6 +1079,9 @@ function Library:CreateWindow(cfg)
             end)
         end
         table.clear(connections)
+        table.clear(paletteBindings)
+        table.clear(paletteControls)
+        table.clear(refresh)
 
         if gui then
             gui:Destroy()
