@@ -1,23 +1,32 @@
 # Universal UI Library
 
-A reusable Roblox UI library with a detailed dark interface, modular layout, and intricate native background.
+A reusable Roblox UI library using the same core visual layout as the original interface this project was based on, but with neutral branding and no game-specific logic.
 
-The library contains **no game-specific logic**. Every component is callback-driven, so it can be used with any Roblox script.
+## What changed
 
-## Design
+This build intentionally keeps the original interface structure:
 
-The current build uses:
+- 850 × 566 main window
+- dark purple/black palette
+- thin purple borders
+- gothic architectural tracery in the background
+- Antique-font section headings
+- fixed numbered sidebar navigation
+- right-aligned ON / OFF controls
+- right-side text input controls
+- compact full-width cycle rows
+- original scrolling-page dimensions
+- original draggable-header behavior
+- original responsive scaling formula
+- compact bottom status/footer strip
 
-- Rounded sidebar navigation, page titles, compact cards, modern toggles, and clean spacing.
-- Purple/cyan accent palette with neutral branding.
-- A detailed native background made from layered gradients, architectural grid lines, diagonal accent streaks, gothic tracery, corner diamonds, and accent nodes.
-- Responsive scaling for smaller viewports.
-- Draggable and minimizable window.
-- RightShift show/hide.
-- F9 unload.
-- **No pause function or pause button.**
+It intentionally removes:
 
-No external images are required for the background.
+- the pause button
+- F6 pause handling
+- `ACTIVE / PAUSE` wording
+- game-specific branding
+- game-specific feature logic
 
 ---
 
@@ -29,7 +38,7 @@ local Library = loadstring(game:HttpGet(
 ))()
 ```
 
-To launch the complete component showcase:
+Launch the showcase:
 
 ```lua
 loadstring(game:HttpGet(
@@ -43,10 +52,11 @@ loadstring(game:HttpGet(
 
 ```lua
 local Window = Library:CreateWindow({
-    Title = "My Script",
-    SubTitle = "UNIVERSAL INTERFACE",
+    Title = "INTERFACE",
+    SubTitle = "U N I V E R S A L",
+    ProductName = "SYSTEM",
+    CurrentPage = "MAIN",
     Version = "v1.0",
-    Theme = "Default",
 })
 ```
 
@@ -55,36 +65,42 @@ local Window = Library:CreateWindow({
 | Field | Type | Default |
 |---|---|---|
 | `Title` | string | `"INTERFACE"` |
-| `SubTitle` | string | `"UNIVERSAL INTERFACE"` |
+| `SubTitle` | string | `"U N I V E R S A L"` |
+| `ProductName` | string | `"SYSTEM"` |
+| `CurrentPage` | string | `"MAIN"` |
 | `Version` | string | `"UI LIBRARY"` |
-| `Theme` | string/table | `"Default"` |
-| `Width` | number | `780` |
-| `Height` | number | `550` |
+| `Palette` | table | original purple palette |
 | `ToggleKey` | KeyCode/false | `RightShift` |
 | `UnloadKey` | KeyCode/false | `F9` |
-| `Parent` | Instance | `gethui()` or PlayerGui |
+| `Parent` | Instance | `gethui()` or `PlayerGui` |
 | `DisplayOrder` | number | `100` |
 | `OnUnload` | function | optional |
 
-### Built-in themes
+---
+
+## Original palette
 
 ```lua
-Theme = "Default"   -- default purple/cyan hybrid
-Theme = "Cyan"      -- cyan accent
-Theme = "Purple"
+bg     = Color3.fromRGB(8, 7, 12)
+card   = Color3.fromRGB(18, 12, 25)
+line   = Color3.fromRGB(77, 48, 101)
+accent = Color3.fromRGB(145, 99, 182)
+bright = Color3.fromRGB(211, 187, 229)
+text   = Color3.fromRGB(234, 225, 237)
+muted  = Color3.fromRGB(167, 149, 179)
 ```
 
-You can also pass a custom theme table.
+You can override any of those through `Palette = {...}`.
 
 ---
 
 ## Window methods
 
 ```lua
-Window:SetStatus("ACTIVE")
+Window:SetStatus("READY")
 Window:SetVisible(true)
 Window:ToggleVisible()
-Window:SetFooter("v1.0", "CUSTOM FOOTER")
+Window:SetFooter("v1.0", "Loaded")
 Window:Destroy()
 
 Window:Notify({
@@ -94,7 +110,7 @@ Window:Notify({
 })
 ```
 
-There is intentionally **no** `SetPaused`, pause state, F6 pause key, or pause button.
+There is deliberately no pause state, no `SetPaused`, and no F6 binding.
 
 ---
 
@@ -104,11 +120,21 @@ There is intentionally **no** `SetPaused`, pause state, F6 pause key, or pause b
 local Main = Window:CreateTab({
     Title = "Main",
     Index = 1,
-    Description = "Primary controls",
 })
 ```
 
-Tabs are completely dynamic; use as many as your script needs.
+A six-page layout can be created with:
+
+```lua
+local Tabs = {
+    Main = Window:CreateTab({Title = "Main", Index = 1}),
+    Combat = Window:CreateTab({Title = "Combat", Index = 2}),
+    Automation = Window:CreateTab({Title = "Automation", Index = 3}),
+    Targeting = Window:CreateTab({Title = "Targeting", Index = 4}),
+    Vision = Window:CreateTab({Title = "Vision", Index = 5}),
+    Settings = Window:CreateTab({Title = "Settings", Index = 6}),
+}
+```
 
 ---
 
@@ -117,9 +143,15 @@ Tabs are completely dynamic; use as many as your script needs.
 ```lua
 local General = Main:CreateSection({
     Title = "General",
-    Description = "Primary script options",
-    Level = 1, -- optional
+    Level = 1,
+    Description = "Primary script controls.",
 })
+```
+
+If `Level` is provided, the heading becomes:
+
+```text
+GENERAL · LEVEL 1
 ```
 
 ---
@@ -129,23 +161,48 @@ local General = Main:CreateSection({
 ```lua
 local Toggle = General:CreateToggle({
     Title = "Enabled",
-    Default = false,
+    Default = true,
     Callback = function(value)
         print(value)
     end,
 })
 
-Toggle.Value:Set(true)
+Toggle.Value:Set(false)
 print(Toggle.Value:Get())
+```
+
+Supports optional locking:
+
+```lua
+General:CreateToggle({
+    Title = "Advanced feature",
+    Default = false,
+    Requirement = function()
+        return true
+    end,
+    OnLocked = function()
+        Window:SetStatus("LOCKED")
+    end,
+})
+```
+
+The control uses the original-style:
+
+```text
+● ON
+○ OFF
+LOCKED
 ```
 
 ---
 
 ## Slider
 
+The original interface used numeric text-entry controls rather than a draggable bar. `CreateSlider` preserves that appearance.
+
 ```lua
 local Slider = General:CreateSlider({
-    Title = "Speed",
+    Title = "Intensity",
     Range = {0, 100},
     Default = 50,
     Increment = 1,
@@ -162,12 +219,12 @@ Slider.Value:Set(75)
 
 ## Dropdown
 
-Single select:
+Dropdowns intentionally behave like the original full-width cycle rows.
 
 ```lua
-local Dropdown = General:CreateDropdown({
+local Mode = General:CreateDropdown({
     Title = "Mode",
-    Options = {"Balanced", "Aggressive", "Safe"},
+    Options = {"Balanced", "Fast", "Safe"},
     Selected = {"Balanced"},
     Callback = function(selected)
         print(selected[1])
@@ -175,10 +232,10 @@ local Dropdown = General:CreateDropdown({
 })
 ```
 
-Multi-select:
+Multi-select is also supported:
 
 ```lua
-local Targets = General:CreateDropdown({
+General:CreateDropdown({
     Title = "Targets",
     Options = {"Players", "NPCs", "Projectiles"},
     Selected = {"Players", "NPCs"},
@@ -276,21 +333,21 @@ local Progress = General:CreateProgress({
 Progress.Value:Set(0.8)
 ```
 
-Values are normalized from `0` to `1`.
+Progress values are normalized from `0` to `1`.
 
 ---
 
 ## Hotkeys
 
-- **RightShift** — show/hide the window.
-- **F9** — unload the UI.
+- **RightShift** — hide/show the interface.
+- **F9** — unload the interface.
 
-Both can be changed or disabled through `CreateWindow`.
+There is no F6 pause hotkey.
 
 ---
 
 ## Files
 
-- `Library.lua` — reusable library.
-- `Example.lua` — complete showcase.
+- `Library.lua` — reusable UI library.
+- `Example.lua` — full showcase.
 - `README.md` — API reference.
