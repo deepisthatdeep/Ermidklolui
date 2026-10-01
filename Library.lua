@@ -14,15 +14,15 @@ local Library = {}
 Library.__index = Library
 
 Library.Palette = {
-    bg = Color3.fromRGB(5, 7, 15),
-    card = Color3.fromRGB(11, 15, 29),
-    line = Color3.fromRGB(70, 82, 132),
-    accent = Color3.fromRGB(170, 141, 255),
-    accent2 = Color3.fromRGB(102, 221, 255),
-    glow = Color3.fromRGB(214, 232, 255),
-    bright = Color3.fromRGB(229, 236, 255),
-    text = Color3.fromRGB(238, 243, 255),
-    muted = Color3.fromRGB(148, 163, 196),
+    bg = Color3.fromRGB(4, 6, 14),
+    card = Color3.fromRGB(10, 14, 29),
+    line = Color3.fromRGB(70, 86, 138),
+    accent = Color3.fromRGB(176, 148, 255),
+    accent2 = Color3.fromRGB(104, 224, 255),
+    glow = Color3.fromRGB(255, 255, 255),
+    bright = Color3.fromRGB(255, 255, 255),
+    text = Color3.fromRGB(255, 255, 255),
+    muted = Color3.fromRGB(224, 230, 245),
 }
 
 local function copy(source)
@@ -201,6 +201,8 @@ function Library:CreateWindow(cfg)
             Size = UDim2.fromOffset(w, h),
             BackgroundTransparency = 1,
             TextColor3 = color or P.text,
+            TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+            TextStrokeTransparency = .72,
             Font = font or Enum.Font.Code,
             TextSize = size or 12,
             TextWrapped = true,
@@ -407,12 +409,159 @@ function Library:CreateWindow(cfg)
         line(art, x + 9, 439, 1, 37, 0, P.line, .9)
     end
 
+    -- Fine constellation mesh.
+    local starPoints = {
+        {212, 104}, {259, 137}, {304, 96}, {349, 151}, {395, 117},
+        {448, 143}, {493, 101}, {543, 132}, {591, 94}, {638, 148},
+        {690, 111}, {736, 139}, {783, 99}, {225, 214}, {283, 246},
+        {338, 205}, {402, 258}, {458, 222}, {517, 263}, {577, 211},
+        {641, 250}, {704, 207}, {766, 257}, {231, 359}, {296, 393},
+        {354, 349}, {419, 402}, {482, 356}, {548, 393}, {613, 347},
+        {679, 399}, {742, 351}, {790, 391},
+    }
+
+    for index, point in ipairs(starPoints) do
+        local size = index % 5 == 0 and 4 or 2
+        local color = index % 3 == 0 and P.accent2
+            or index % 2 == 0 and P.accent
+            or P.glow
+
+        diamond(art, point[1], point[2], size, color, .54 + (index % 4) * .07)
+
+        if index > 1 and index % 4 ~= 0 then
+            local previous = starPoints[index - 1]
+            local dx = point[1] - previous[1]
+            local dy = point[2] - previous[2]
+            local length = math.sqrt(dx * dx + dy * dy)
+            local angle = math.deg(math.atan2(dy, dx))
+
+            line(
+                art,
+                previous[1] + 2,
+                previous[2] + 2,
+                length,
+                1,
+                angle,
+                index % 2 == 0 and P.accent2 or P.line,
+                .9
+            )
+        end
+    end
+
+    -- Orbital instrument / halo structure behind the right side.
+    local orbit = make("Frame", art, {
+        Position = UDim2.fromOffset(615, 168),
+        Size = UDim2.fromOffset(184, 184),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+
+    for _, ringData in ipairs({
+        {0, 0, 184, P.accent2, .84},
+        {14, 14, 156, P.line, .72},
+        {33, 33, 118, P.accent, .82},
+        {54, 54, 76, P.line, .78},
+        {72, 72, 40, P.glow, .88},
+    }) do
+        ring(
+            orbit,
+            ringData[1],
+            ringData[2],
+            ringData[3],
+            ringData[4],
+            ringData[5],
+            1
+        )
+    end
+
+    for angle = 0, 330, 30 do
+        local radians = math.rad(angle)
+        local cx, cy = 92, 92
+        local radius = 86
+        local x = cx + math.cos(radians) * radius
+        local y = cy + math.sin(radians) * radius
+
+        diamond(
+            orbit,
+            x - 2,
+            y - 2,
+            angle % 60 == 0 and 5 or 3,
+            angle % 90 == 0 and P.accent2 or P.accent,
+            .48
+        )
+    end
+
+    line(orbit, 18, 91, 148, 1, 0, P.line, .82)
+    line(orbit, 91, 18, 1, 148, 0, P.line, .82)
+    line(orbit, 39, 39, 148, 1, 45, P.line, .9)
+    line(orbit, 39, 144, 148, 1, -45, P.line, .9)
+
+    -- Refracted diagonal light channels.
+    for i = 0, 7 do
+        local y = 116 + i * 48
+        line(
+            art,
+            182,
+            y,
+            105,
+            1,
+            -12,
+            i % 2 == 0 and P.accent2 or P.accent,
+            .91
+        )
+        line(
+            art,
+            714,
+            y + 17,
+            105,
+            1,
+            12,
+            i % 2 == 0 and P.accent or P.accent2,
+            .93
+        )
+    end
+
+    -- Micro-grid only in the content field.
+    for x = 194, 820, 31 do
+        line(art, x, 78, 1, 400, 0, P.line, .965)
+    end
+
+    for y = 88, 470, 27 do
+        line(art, 188, y, 634, 1, 0, P.line, .97)
+    end
+
+    -- Left-side vertical light fibers.
+    for i = 0, 4 do
+        line(
+            art,
+            27 + i * 27,
+            103,
+            1,
+            282,
+            0,
+            i % 2 == 0 and P.accent2 or P.accent,
+            .9 + i * .012
+        )
+    end
+
+    -- Small crescent-like cluster built from offset rings.
+    local crescentHolder = make("Frame", art, {
+        Position = UDim2.fromOffset(54, 309),
+        Size = UDim2.fromOffset(82, 82),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+    ring(crescentHolder, 0, 0, 82, P.accent2, .72, 1)
+    ring(crescentHolder, 13, 5, 72, P.bg, .08, 12)
+    diamond(crescentHolder, 13, 54, 5, P.accent, .28)
+    diamond(crescentHolder, 48, 11, 4, P.glow, .52)
+
     local contentVeil = make("Frame", window, {
         Name = "ContentGlass",
         Position = UDim2.fromOffset(174, 12),
         Size = UDim2.fromOffset(662, 542),
         BackgroundColor3 = P.card,
-        BackgroundTransparency = .42,
+        BackgroundTransparency = .68,
         BorderSizePixel = 0,
     })
 
@@ -424,9 +573,9 @@ function Library:CreateWindow(cfg)
             ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 11, 32)),
         }),
         Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, .08),
-            NumberSequenceKeypoint.new(.5, .3),
-            NumberSequenceKeypoint.new(1, .12),
+            NumberSequenceKeypoint.new(0, .48),
+            NumberSequenceKeypoint.new(.5, .66),
+            NumberSequenceKeypoint.new(1, .52),
         }),
     })
 
@@ -492,7 +641,7 @@ function Library:CreateWindow(cfg)
     titleGlow.TextTransparency = .78
 
     local titleLabel = text(header, title, 25, 15, 150, 39, 32, P.text, Enum.Font.Antique)
-    local subtitleLabel = text(window, subtitleText, 24, 57, 150, 24, 10, P.accent2)
+    local subtitleLabel = text(window, subtitleText, 24, 57, 150, 24, 10, P.text)
 
     local titleRail = line(window, 24, 86, 141, 1, 0, P.accent2, .55)
     line(window, 24, 89, 87, 1, 0, P.accent, .78)
@@ -527,6 +676,8 @@ function Library:CreateWindow(cfg)
             Font = Enum.Font.Code,
             TextSize = 12,
             TextColor3 = P.text,
+            TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+            TextStrokeTransparency = .68,
             AutoButtonColor = false,
         })
 
@@ -665,7 +816,7 @@ function Library:CreateWindow(cfg)
             page.Visible = selected
 
             if nav[key] then
-                nav[key].TextColor3 = selected and P.glow or P.muted
+                nav[key].TextColor3 = selected and P.text or Color3.fromRGB(225, 231, 247)
                 nav[key].BackgroundTransparency = selected and .04 or .68
 
                 local strokeObject = nav[key]:FindFirstChildOfClass("UIStroke")
@@ -680,6 +831,36 @@ function Library:CreateWindow(cfg)
         activeTab = name
         breadcrumb.Text = string.upper(name) .. "  /  " .. string.upper(productName)
     end
+
+    local sidebarGlass = make("Frame", window, {
+        Name = "SidebarGlass",
+        Position = UDim2.fromOffset(17, 98),
+        Size = UDim2.fromOffset(151, 291),
+        BackgroundColor3 = P.card,
+        BackgroundTransparency = .78,
+        BorderSizePixel = 0,
+    })
+    sidebarGlass.ZIndex = 0
+
+    make("UIStroke", sidebarGlass, {
+        Color = P.accent2,
+        Thickness = 1,
+        Transparency = .76,
+    })
+
+    make("UIGradient", sidebarGlass, {
+        Rotation = 90,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(16, 27, 47)),
+            ColorSequenceKeypoint.new(.5, Color3.fromRGB(8, 13, 27)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(21, 10, 34)),
+        }),
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, .38),
+            NumberSequenceKeypoint.new(.5, .68),
+            NumberSequenceKeypoint.new(1, .45),
+        }),
+    })
 
     -- No pause button. Only unload and show/hide remain.
     text(
@@ -964,6 +1145,26 @@ function Library:CreateWindow(cfg)
                 BorderSizePixel = 0,
             })
 
+            local leftRay = make("Frame", card, {
+                Position = UDim2.fromOffset(0, 0),
+                Size = UDim2.fromOffset(2, 23),
+                BackgroundColor3 = P.accent2,
+                BackgroundTransparency = .28,
+                BorderSizePixel = 0,
+            })
+
+            local rightRay = make("Frame", card, {
+                AnchorPoint = Vector2.new(1, 0),
+                Position = UDim2.new(1, 0, 0, 0),
+                Size = UDim2.fromOffset(2, 23),
+                BackgroundColor3 = P.accent,
+                BackgroundTransparency = .38,
+                BorderSizePixel = 0,
+            })
+
+            line(card, 0, 29, 74, 1, 0, P.accent2, .75)
+            line(card, 76, 29, 18, 1, 0, P.accent, .88)
+
             make("UIPadding", card, {
                 PaddingTop = UDim.new(0, 10),
                 PaddingBottom = UDim.new(0, 10),
@@ -1073,8 +1274,8 @@ function Library:CreateWindow(cfg)
                         or state and "●  ON"
                         or "○  OFF"
 
-                    toggleButton.TextColor3 = available and state and P.bright
-                        or P.muted
+                    toggleButton.TextColor3 = available and P.text
+                        or Color3.fromRGB(210, 218, 238)
 
                     toggleButton.AutoButtonColor = available
                     Object.Value.Current = state
@@ -1207,8 +1408,8 @@ function Library:CreateWindow(cfg)
                     Position = UDim2.new(1, -240, 0, 2),
                     BackgroundColor3 = P.bg,
                     BorderSizePixel = 0,
-                    TextColor3 = P.bright,
-                    PlaceholderColor3 = P.muted,
+                    TextColor3 = P.text,
+                    PlaceholderColor3 = Color3.fromRGB(205, 214, 236),
                     Font = Enum.Font.Code,
                     TextSize = 12,
                     ClearTextOnFocus = false,
@@ -1302,7 +1503,7 @@ function Library:CreateWindow(cfg)
                     Position = UDim2.new(1, -240, 0, 2),
                     BackgroundColor3 = P.bg,
                     BorderSizePixel = 0,
-                    TextColor3 = P.bright,
+                    TextColor3 = P.text,
                     Font = Enum.Font.Code,
                     TextSize = 12,
                     ClearTextOnFocus = false,
