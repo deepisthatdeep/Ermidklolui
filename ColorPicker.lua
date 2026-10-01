@@ -135,6 +135,28 @@ function Picker.Create(cfg)
         }),
     })
 
+    local inset = new("Frame", popup, {
+        Name = "InsetBorder",
+        Position = UDim2.fromOffset(5, 5),
+        Size = UDim2.new(1, -10, 1, -10),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 101,
+    })
+    round(inset, 7)
+    stroke(inset, line, .78, 1)
+    for _, x in ipairs({10, 334}) do
+        local jewel = new("Frame", popup, {
+            Position = UDim2.fromOffset(x, 8),
+            Size = UDim2.fromOffset(4, 4),
+            Rotation = 45,
+            BackgroundColor3 = accent,
+            BackgroundTransparency = .28,
+            BorderSizePixel = 0,
+            ZIndex = 102,
+        })
+    end
+
     local beam = new("Frame", popup, {
         Position = UDim2.fromOffset(12, 8),
         Size = UDim2.new(1, -24, 0, 2),
