@@ -283,12 +283,13 @@ function Library:CreateWindow(cfg)
             BackgroundTransparency = 1,
             TextColor3 = color or P.text,
             TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-            TextStrokeTransparency = .72,
+            TextStrokeTransparency = .42,
             Font = font or Enum.Font.Code,
             TextSize = size or 12,
             TextWrapped = true,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextYAlignment = Enum.TextYAlignment.Center,
+            ZIndex = 9,
         })
     end
 
@@ -804,8 +805,9 @@ function Library:CreateWindow(cfg)
             TextSize = 12,
             TextColor3 = P.text,
             TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-            TextStrokeTransparency = .68,
+            TextStrokeTransparency = .38,
             AutoButtonColor = false,
+            ZIndex = 8,
         })
 
         make("UIStroke", object, {
@@ -818,12 +820,26 @@ function Library:CreateWindow(cfg)
             CornerRadius = UDim.new(0, 7),
         })
 
-        local buttonGradient = make("UIGradient", object, {
+        local buttonUnderlay = make("Frame", object, {
+            Name = "ButtonUnderlay",
+            Position = UDim2.fromOffset(1, 1),
+            Size = UDim2.new(1, -2, 1, -2),
+            BackgroundColor3 = Color3.fromRGB(12, 16, 31),
+            BackgroundTransparency = .16,
+            BorderSizePixel = 0,
+            ZIndex = math.max(1, object.ZIndex - 1),
+        })
+
+        make("UICorner", buttonUnderlay, {
+            CornerRadius = UDim.new(0, 6),
+        })
+
+        make("UIGradient", buttonUnderlay, {
             Rotation = 0,
             Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(18, 21, 40)),
-                ColorSequenceKeypoint.new(.55, Color3.fromRGB(12, 16, 31)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 13, 35)),
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 26, 48)),
+                ColorSequenceKeypoint.new(.55, Color3.fromRGB(11, 15, 30)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(23, 14, 39)),
             }),
         })
 
@@ -833,12 +849,13 @@ function Library:CreateWindow(cfg)
             BackgroundColor3 = P.glow,
             BackgroundTransparency = .72,
             BorderSizePixel = 0,
+            ZIndex = 7,
         })
 
         bind(object.MouseEnter, function()
             TweenService:Create(object, TweenInfo.new(.16), {
                 BackgroundTransparency = .04,
-                TextColor3 = P.glow,
+                TextColor3 = P.text,
             }):Play()
         end)
 
@@ -947,7 +964,7 @@ function Library:CreateWindow(cfg)
             page.Visible = selected
 
             if nav[key] then
-                nav[key].TextColor3 = selected and P.text or Color3.fromRGB(225, 231, 247)
+                nav[key].TextColor3 = Color3.fromRGB(255, 255, 255)
                 nav[key].BackgroundTransparency = selected and .04 or .68
 
                 local strokeObject = nav[key]:FindFirstChildOfClass("UIStroke")
@@ -1178,7 +1195,7 @@ function Library:CreateWindow(cfg)
 
         navButton.Size = UDim2.fromOffset(156, 38)
         navButton.BackgroundTransparency = #tabs == 0 and .02 or .62
-        navButton.TextColor3 = #tabs == 0 and P.bright or P.muted
+        navButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
         -- Sidebar tab ornament: rail, rune node, and trailing stitch.
         line(navButton, 4, 6, 1, 18, 0, P.accent, #tabs == 0 and .05 or .62)
@@ -1363,7 +1380,7 @@ function Library:CreateWindow(cfg)
                     420,
                     38,
                     12,
-                    P.text
+                    Color3.fromRGB(255, 255, 255)
                 )
 
                 local switch = make("TextButton", row, {
@@ -1424,7 +1441,7 @@ function Library:CreateWindow(cfg)
                     49,
                     28,
                     10,
-                    P.text
+                    Color3.fromRGB(255, 255, 255)
                 )
                 stateLabel.TextXAlignment = Enum.TextXAlignment.Center
 
@@ -1617,7 +1634,9 @@ function Library:CreateWindow(cfg)
                     Position = UDim2.new(1, -240, 0, 2),
                     BackgroundColor3 = P.bg,
                     BorderSizePixel = 0,
-                    TextColor3 = P.text,
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+                    TextStrokeTransparency = .35,
                     PlaceholderColor3 = Color3.fromRGB(205, 214, 236),
                     Font = Enum.Font.Code,
                     TextSize = 12,
@@ -1705,7 +1724,7 @@ function Library:CreateWindow(cfg)
                     350,
                     38,
                     12,
-                    P.text
+                    Color3.fromRGB(255, 255, 255)
                 )
 
                 local swatch = make("Frame", row, {
@@ -1734,7 +1753,9 @@ function Library:CreateWindow(cfg)
                     BackgroundTransparency = .05,
                     BorderSizePixel = 0,
                     Text = colorToHex(current),
-                    TextColor3 = P.text,
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+                    TextStrokeTransparency = .35,
                     PlaceholderColor3 = P.muted,
                     Font = Enum.Font.Code,
                     TextSize = 12,
@@ -1820,7 +1841,7 @@ function Library:CreateWindow(cfg)
                     430,
                     21,
                     12,
-                    P.text
+                    Color3.fromRGB(255, 255, 255)
                 )
 
                 local valueLabel = text(
@@ -1831,7 +1852,7 @@ function Library:CreateWindow(cfg)
                     143,
                     21,
                     11,
-                    P.text
+                    Color3.fromRGB(255, 255, 255)
                 )
                 valueLabel.TextXAlignment = Enum.TextXAlignment.Right
 
@@ -2405,6 +2426,27 @@ function Library:CreateWindow(cfg)
             end
         end
     end)
+
+    local function enforceReadableText()
+        for _, object in ipairs(window:GetDescendants()) do
+            if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
+                if object.TextTransparency < 1 then
+                    local c = object.TextColor3
+                    local luminance = c.R * .2126 + c.G * .7152 + c.B * .0722
+
+                    if luminance < .52 then
+                        object.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    end
+
+                    object.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    object.TextStrokeTransparency = math.min(object.TextStrokeTransparency, .5)
+                end
+            end
+        end
+    end
+
+    enforceReadableText()
+    task.defer(enforceReadableText)
 
     updateFooter()
 
