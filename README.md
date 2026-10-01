@@ -43,10 +43,8 @@ local Window = Library:CreateWindow({
 | `Version` | string | `"UI LIBRARY"` |
 | `Palette` | table | white accents on dark panels |
 | `ToggleKey` | KeyCode/false | `RightShift` |
-| `UnloadKey` | KeyCode/false | `F9` |
 | `Parent` | Instance | `gethui()` or `PlayerGui` |
 | `DisplayOrder` | number | `100` |
-| `OnUnload` | function | optional |
 
 ---
 
@@ -77,7 +75,7 @@ Window:SetStatus("READY")
 Window:SetVisible(true)
 Window:ToggleVisible()
 Window:SetFooter("v1.0", "Loaded")
-Window:Destroy()
+Window:Destroy() -- programmatic cleanup
 
 Window:Notify({
     Title = "Saved",
@@ -374,21 +372,23 @@ Saved colors use executor file APIs and are automatically restored on the next l
 ```lua
 local Accent = Section:CreateColorInput({
     Title = "Primary accent",
+    PaletteKey = "accent",
     Default = Window:GetPaletteColor("accent"),
     Callback = function(color, hex)
-        Window:SetPaletteColor("accent", color)
         print(hex)
     end,
 })
 
 Accent:SetHex("#FF80D5")
 print(Accent:GetHex())
+Accent:Close() -- closes only this control
 ```
+
+`PaletteKey` binds the control to one palette channel. Programmatic edits, load, and reset synchronize its swatch without firing its callback. Omit `PaletteKey` for an independent color value. `Accent:SetColor(color, false)` updates a standalone control silently. Picker drafts commit with Select; closing or switching pickers cancels the draft.
 
 ## Hotkeys
 
 - **RightShift** — hide/show the interface.
-- **F9** — unload the interface.
 
 There is no F6 pause hotkey.
 
