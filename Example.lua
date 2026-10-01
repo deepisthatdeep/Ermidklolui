@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=379fcb6"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=c122b9f"
 ))()
 
 local Window = Library:CreateWindow({
@@ -219,34 +219,72 @@ local SettingsSection = Settings:CreateSection({
 
 local ColorSection = Settings:CreateSection({
     Title = "Color Matrix",
-    Description = "Switch the interface lighting profile at runtime.",
+    Description = "Edit every interface color manually with hex values. Saved colors load automatically next time.",
 })
 
-ColorSection:CreateDropdown({
-    Title = "Color profile",
-    Options = {"Moon", "Aurora", "Rose", "Solar", "Ice"},
-    Selected = {"Moon"},
-    Callback = function(selected)
-        Window:SetColorway(selected[1])
-        Window:SetStatus(string.upper(selected[1]))
-        Window:SetFooter("NIGHTFALL BUILD", "Color profile: " .. selected[1])
-    end,
-})
+local ColorControls = {}
+local ColorRows = {
+    {"Background", "bg"},
+    {"Panel", "card"},
+    {"Border", "line"},
+    {"Primary accent", "accent"},
+    {"Secondary accent", "accent2"},
+    {"Glow", "glow"},
+    {"Text", "text"},
+    {"Muted text", "muted"},
+}
 
-ColorSection:CreateToggle({
-    Title = "Ambient light motion",
-    Default = true,
-    Callback = function(value)
-        Window:SetAmbientGlow(value)
+for _, row in ipairs(ColorRows) do
+    local label, key = row[1], row[2]
+
+    ColorControls[key] = ColorSection:CreateColorInput({
+        Title = label,
+        Default = Window:GetPaletteColor(key),
+        Callback = function(color)
+            Window:SetPaletteColor(key, color)
+            Window:SetStatus("EDITING")
+        end,
+    })
+end
+
+ColorSection:CreateButton({
+    Title = "Save color setup",
+    Callback = function()
+        local ok, result = Window:SavePalette()
+        Window:SetStatus(ok and "SAVED" or "SAVE ERROR")
+        Window:SetFooter(
+            "NIGHTFALL BUILD",
+            ok and ("Saved to " .. tostring(result)) or tostring(result)
+        )
     end,
 })
 
 ColorSection:CreateButton({
-    Title = "Cycle color profile",
+    Title = "Reload saved colors",
     Callback = function()
-        local name = Window:CycleColorway()
-        Window:SetStatus(string.upper(name))
-        Window:SetFooter("NIGHTFALL BUILD", "Color profile: " .. name)
+        local ok, result = Window:LoadPalette()
+        if ok then
+            for key, control in pairs(ColorControls) do
+                control.Value:Set(Window:GetPaletteColor(key))
+            end
+        end
+
+        Window:SetStatus(ok and "LOADED" or "LOAD ERROR")
+        Window:SetFooter("NIGHTFALL BUILD", ok and "Saved colors restored" or tostring(result))
+    end,
+})
+
+ColorSection:CreateButton({
+    Title = "Reset colors",
+    Callback = function()
+        Window:ResetPalette()
+
+        for key, control in pairs(ColorControls) do
+            control.Value:Set(Window:GetPaletteColor(key))
+        end
+
+        Window:SetStatus("RESET")
+        Window:SetFooter("NIGHTFALL BUILD", "Default colors restored")
     end,
 })
 
