@@ -3,35 +3,35 @@ local Library = loadstring(game:HttpGet(
 ))()
 
 local Window = Library:CreateWindow({
-    Title = "AETHER",
-    SubTitle = "S P E C T R A L",
-    ProductName = "PRISM",
-    CurrentPage = "OVERVIEW",
-    Version = "NIGHTFALL BUILD",
+    Title = "N/A",
+    SubTitle = "N / A",
+    ProductName = "N/A",
+    CurrentPage = "N/A",
+    Version = "N/A",
 })
 
-local Main = Window:CreateTab({
-    Title = "Overview",
+local General = Window:CreateTab({
+    Title = "General",
     Index = 1,
 })
 
-local Combat = Window:CreateTab({
-    Title = "Signal",
+local Player = Window:CreateTab({
+    Title = "Player",
     Index = 2,
 })
 
-local Automation = Window:CreateTab({
-    Title = "Flow",
+local World = Window:CreateTab({
+    Title = "World",
     Index = 3,
 })
 
-local Targeting = Window:CreateTab({
-    Title = "Focus",
+local Visuals = Window:CreateTab({
+    Title = "Visuals",
     Index = 4,
 })
 
-local Vision = Window:CreateTab({
-    Title = "Optics",
+local Misc = Window:CreateTab({
+    Title = "Misc",
     Index = 5,
 })
 
@@ -40,186 +40,239 @@ local Settings = Window:CreateTab({
     Index = 6,
 })
 
-local General = Main:CreateSection({
+local GeneralSection = General:CreateSection({
     Title = "General",
-    Level = 1,
-    Description = "Primary controls using the original gothic card layout.",
+    Description = "N/A",
 })
 
-General:CreateToggle({
+GeneralSection:CreateToggle({
     Title = "Enabled",
-    Default = true,
+    Default = false,
     Callback = function(value)
-        Window:SetStatus(value and "READY" or "IDLE")
         print("Enabled:", value)
     end,
 })
 
-General:CreateSlider({
-    Title = "Intensity",
-    Range = {0, 100},
-    Default = 50,
-    Increment = 1,
-    Suffix = "%",
-    Callback = function(value)
-        print("Intensity:", value)
-    end,
-})
-
-General:CreateDropdown({
+GeneralSection:CreateDropdown({
     Title = "Mode",
-    Options = {"Balanced", "Fast", "Safe"},
-    Selected = {"Balanced"},
+    Options = {"N/A"},
+    Selected = {"N/A"},
     Callback = function(selected)
         print("Mode:", selected[1])
     end,
 })
 
-local Runtime = Main:CreateSection({
-    Title = "Runtime",
-    Description = "Status text, progress, notifications, and actions.",
-})
-
-local RuntimeLabel = Runtime:CreateLabel("Runtime: ready")
-
-local Progress = Runtime:CreateProgress({
-    Title = "Task progress",
-    Default = 0.35,
-})
-
-Runtime:CreateButton({
-    Title = "Advance progress",
-    Callback = function()
-        local nextValue = math.clamp(Progress.Value:Get() + 0.1, 0, 1)
-        Progress.Value:Set(nextValue)
-        RuntimeLabel.Value:Set("Runtime: progress updated")
+GeneralSection:CreateInput({
+    Title = "Status",
+    Default = "N/A",
+    Placeholder = "N/A",
+    Callback = function(value)
+        print("Status:", value)
     end,
 })
 
-Runtime:CreateButton({
-    Title = "Show notification",
-    Callback = function()
-        Window:Notify({
-            Title = "Notice",
-            Content = "This notification uses the same dark bordered style.",
-            Duration = 3,
-        })
-    end,
+local PlayerSection = Player:CreateSection({
+    Title = "Movement",
+    Description = "N/A",
 })
 
-local CombatSection = Combat:CreateSection({
-    Title = "Combat controls",
-    Level = 1,
-    Description = "UI-only example controls. Connect callbacks to your own code.",
-})
-
-CombatSection:CreateToggle({
-    Title = "Primary feature",
+PlayerSection:CreateToggle({
+    Title = "Walk Speed",
     Default = false,
     Callback = function(value)
-        print("Primary feature:", value)
+        print("Walk Speed:", value)
     end,
 })
 
-CombatSection:CreateInput({
+PlayerSection:CreateSlider({
+    Title = "Walk Speed Value",
+    Range = {0, 100},
+    Default = 0,
+    Increment = 1,
+    Callback = function(value)
+        print("Walk Speed Value:", value)
+    end,
+})
+
+PlayerSection:CreateToggle({
+    Title = "Jump Power",
+    Default = false,
+    Callback = function(value)
+        print("Jump Power:", value)
+    end,
+})
+
+PlayerSection:CreateSlider({
+    Title = "Jump Power Value",
+    Range = {0, 150},
+    Default = 0,
+    Increment = 1,
+    Callback = function(value)
+        print("Jump Power Value:", value)
+    end,
+})
+
+PlayerSection:CreateToggle({
+    Title = "Fly",
+    Default = false,
+    Callback = function(value)
+        print("Fly:", value)
+    end,
+})
+
+PlayerSection:CreateToggle({
+    Title = "Noclip",
+    Default = false,
+    Callback = function(value)
+        print("Noclip:", value)
+    end,
+})
+
+local WorldSection = World:CreateSection({
+    Title = "World",
+    Description = "N/A",
+})
+
+WorldSection:CreateToggle({
+    Title = "Auto Interact",
+    Default = false,
+    Callback = function(value)
+        print("Auto Interact:", value)
+    end,
+})
+
+WorldSection:CreateToggle({
+    Title = "Auto Collect",
+    Default = false,
+    Callback = function(value)
+        print("Auto Collect:", value)
+    end,
+})
+
+WorldSection:CreateDropdown({
+    Title = "Target",
+    Options = {"N/A"},
+    Selected = {"N/A"},
+    Callback = function(selected)
+        print("Target:", selected[1])
+    end,
+})
+
+WorldSection:CreateInput({
     Title = "Range",
-    Default = 120,
-    Numeric = true,
-    Min = 0,
-    Max = 1000,
+    Default = "N/A",
+    Placeholder = "N/A",
     Callback = function(value)
         print("Range:", value)
     end,
 })
 
-CombatSection:CreateSeparator({
-    Title = "Advanced",
+local VisualSection = Visuals:CreateSection({
+    Title = "Visuals",
+    Description = "N/A",
 })
 
-CombatSection:CreateDropdown({
-    Title = "Targets",
-    Options = {"Players", "NPCs", "Projectiles"},
-    Selected = {"Players", "NPCs"},
-    Multi = true,
-    Callback = function(selected)
-        print("Selected:", table.concat(selected, ", "))
-    end,
-})
-
-local AutomationSection = Automation:CreateSection({
-    Title = "Automation",
-    Description = "Example automation controls only.",
-})
-
-AutomationSection:CreateToggle({
-    Title = "Automatic action",
+VisualSection:CreateToggle({
+    Title = "ESP",
     Default = false,
     Callback = function(value)
-        print("Automatic action:", value)
+        print("ESP:", value)
     end,
 })
 
-AutomationSection:CreateSlider({
-    Title = "Delay",
-    Range = {0, 2},
-    Default = 0.2,
-    Increment = 0.05,
-    Suffix = "s",
+VisualSection:CreateToggle({
+    Title = "Player Names",
+    Default = false,
     Callback = function(value)
-        print("Delay:", value)
+        print("Player Names:", value)
     end,
 })
 
-local TargetSection = Targeting:CreateSection({
-    Title = "Selection",
-    Description = "Target and filtering UI examples.",
-})
-
-TargetSection:CreateDropdown({
-    Title = "Priority",
-    Options = {"Distance", "FOV", "Manual"},
-    Selected = {"Distance"},
-    Callback = function(selected)
-        print("Priority:", selected[1])
-    end,
-})
-
-TargetSection:CreateInput({
-    Title = "Maximum distance",
-    Default = 160,
-    Numeric = true,
-    Min = 0,
-    Max = 1000,
+VisualSection:CreateToggle({
+    Title = "Boxes",
+    Default = false,
     Callback = function(value)
-        print("Maximum distance:", value)
+        print("Boxes:", value)
     end,
 })
 
-local VisionSection = Vision:CreateSection({
-    Title = "Display",
-    Description = "Visual settings and status display.",
-})
-
-VisionSection:CreateToggle({
-    Title = "Show overlay",
-    Default = true,
+VisualSection:CreateToggle({
+    Title = "Fullbright",
+    Default = false,
     Callback = function(value)
-        print("Show overlay:", value)
+        print("Fullbright:", value)
     end,
 })
 
-VisionSection:CreateParagraph({
-    Title = "Design",
-    Content = "The interface uses layered glass, orbital geometry, refractive latticework, luminous switches, white typography, and animated spectral accents.",
+VisualSection:CreateSlider({
+    Title = "Field Of View",
+    Range = {0, 120},
+    Default = 0,
+    Increment = 1,
+    Callback = function(value)
+        print("Field Of View:", value)
+    end,
+})
+
+local MiscSection = Misc:CreateSection({
+    Title = "Miscellaneous",
+    Description = "N/A",
+})
+
+MiscSection:CreateToggle({
+    Title = "Anti AFK",
+    Default = false,
+    Callback = function(value)
+        print("Anti AFK:", value)
+    end,
+})
+
+MiscSection:CreateButton({
+    Title = "Rejoin",
+    Callback = function()
+        Window:SetStatus("N/A")
+        Window:SetFooter("N/A", "N/A")
+    end,
+})
+
+MiscSection:CreateButton({
+    Title = "Server Hop",
+    Callback = function()
+        Window:SetStatus("N/A")
+        Window:SetFooter("N/A", "N/A")
+    end,
+})
+
+MiscSection:CreateParagraph({
+    Title = "Information",
+    Content = "N/A",
 })
 
 local SettingsSection = Settings:CreateSection({
+    Title = "Settings",
+    Description = "N/A",
+})
+
+SettingsSection:CreateKeybind({
+    Title = "Keybind",
+    Default = Enum.KeyCode.K,
+    Callback = function(key)
+        print("Keybind:", key.Name)
+    end,
+})
+
+SettingsSection:CreateInput({
     Title = "Configuration",
+    Default = "N/A",
+    Placeholder = "N/A",
+    Callback = function(value)
+        print("Configuration:", value)
+    end,
 })
 
 local ColorSection = Settings:CreateSection({
-    Title = "Color Matrix",
-    Description = "Edit every interface color manually with hex values. Saved colors load automatically next time.",
+    Title = "Colors",
+    Description = "N/A",
 })
 
 local ColorControls = {}
@@ -227,12 +280,12 @@ local ColorRows = {
     {"Background", "bg"},
     {"Panel", "card"},
     {"Border", "line"},
-    {"Primary accent", "accent"},
-    {"Secondary accent", "accent2"},
+    {"Primary Accent", "accent"},
+    {"Secondary Accent", "accent2"},
     {"Glow", "glow"},
-    {"Highlight text", "bright"},
+    {"Highlight Text", "bright"},
     {"Text", "text"},
-    {"Muted text", "muted"},
+    {"Muted Text", "muted"},
 }
 
 for _, row in ipairs(ColorRows) do
@@ -243,40 +296,38 @@ for _, row in ipairs(ColorRows) do
         Default = Window:GetPaletteColor(key),
         Callback = function(color)
             Window:SetPaletteColor(key, color)
-            Window:SetStatus("EDITING")
+            Window:SetStatus("N/A")
         end,
     })
 end
 
 ColorSection:CreateButton({
-    Title = "Save color setup",
+    Title = "Save Colors",
     Callback = function()
-        local ok, result = Window:SavePalette()
-        Window:SetStatus(ok and "SAVED" or "SAVE ERROR")
-        Window:SetFooter(
-            "NIGHTFALL BUILD",
-            ok and ("Saved to " .. tostring(result)) or tostring(result)
-        )
+        Window:SavePalette()
+        Window:SetStatus("N/A")
+        Window:SetFooter("N/A", "N/A")
     end,
 })
 
 ColorSection:CreateButton({
-    Title = "Reload saved colors",
+    Title = "Load Colors",
     Callback = function()
-        local ok, result = Window:LoadPalette()
+        local ok = Window:LoadPalette()
+
         if ok then
             for key, control in pairs(ColorControls) do
                 control.Value:Set(Window:GetPaletteColor(key))
             end
         end
 
-        Window:SetStatus(ok and "LOADED" or "LOAD ERROR")
-        Window:SetFooter("NIGHTFALL BUILD", ok and "Saved colors restored" or tostring(result))
+        Window:SetStatus("N/A")
+        Window:SetFooter("N/A", "N/A")
     end,
 })
 
 ColorSection:CreateButton({
-    Title = "Reset colors",
+    Title = "Reset Colors",
     Callback = function()
         Window:ResetPalette()
 
@@ -284,40 +335,23 @@ ColorSection:CreateButton({
             control.Value:Set(Window:GetPaletteColor(key))
         end
 
-        Window:SetStatus("RESET")
-        Window:SetFooter("NIGHTFALL BUILD", "Default colors restored")
-    end,
-})
-
-SettingsSection:CreateKeybind({
-    Title = "Example keybind",
-    Default = Enum.KeyCode.K,
-    Callback = function(key)
-        print("Keybind:", key.Name)
-    end,
-})
-
-SettingsSection:CreateInput({
-    Title = "Profile name",
-    Default = "Default",
-    Placeholder = "Profile",
-    Callback = function(value)
-        print("Profile:", value)
+        Window:SetStatus("N/A")
+        Window:SetFooter("N/A", "N/A")
     end,
 })
 
 SettingsSection:CreateButton({
-    Title = "Save settings",
+    Title = "Save Settings",
     Callback = function()
-        Window:SetStatus("SAVED")
-        Window:SetFooter("EXAMPLE BUILD", "Settings callback fired")
+        Window:SetStatus("N/A")
+        Window:SetFooter("N/A", "N/A")
     end,
 })
 
 SettingsSection:CreateParagraph({
-    Title = "Hotkeys",
-    Content = "F9 unloads the interface. RightShift hides or shows it. There is no pause control.",
+    Title = "Information",
+    Content = "N/A",
 })
 
-Window:SetStatus("STABLE")
-Window:SetFooter("NIGHTFALL BUILD", "Spectral interface online")
+Window:SetStatus("N/A")
+Window:SetFooter("N/A", "N/A")
