@@ -6,6 +6,7 @@
 
 local Players = game:GetService("Players")
 local Input = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -13,13 +14,15 @@ local Library = {}
 Library.__index = Library
 
 Library.Palette = {
-    bg = Color3.fromRGB(8, 7, 12),
-    card = Color3.fromRGB(18, 12, 25),
-    line = Color3.fromRGB(77, 48, 101),
-    accent = Color3.fromRGB(145, 99, 182),
-    bright = Color3.fromRGB(211, 187, 229),
-    text = Color3.fromRGB(234, 225, 237),
-    muted = Color3.fromRGB(167, 149, 179),
+    bg = Color3.fromRGB(5, 7, 15),
+    card = Color3.fromRGB(11, 15, 29),
+    line = Color3.fromRGB(70, 82, 132),
+    accent = Color3.fromRGB(170, 141, 255),
+    accent2 = Color3.fromRGB(102, 221, 255),
+    glow = Color3.fromRGB(214, 232, 255),
+    bright = Color3.fromRGB(229, 236, 255),
+    text = Color3.fromRGB(238, 243, 255),
+    muted = Color3.fromRGB(148, 163, 196),
 }
 
 local function copy(source)
@@ -105,10 +108,10 @@ function Library:CreateWindow(cfg)
     local activeTab = nil
     local capturingKey = false
 
-    local title = tostring(cfg.Title or "INTERFACE")
-    local subtitleText = tostring(cfg.SubTitle or "U N I V E R S A L")
-    local productName = tostring(cfg.ProductName or "SYSTEM")
-    local currentPage = tostring(cfg.CurrentPage or "MAIN")
+    local title = tostring(cfg.Title or "AETHER")
+    local subtitleText = tostring(cfg.SubTitle or "S P E C T R A L")
+    local productName = tostring(cfg.ProductName or "PRISM")
+    local currentPage = tostring(cfg.CurrentPage or "OVERVIEW")
     local versionText = tostring(cfg.Version or "UI LIBRARY")
 
     local toggleKey = cfg.ToggleKey == false and nil or (cfg.ToggleKey or Enum.KeyCode.RightShift)
@@ -149,6 +152,44 @@ function Library:CreateWindow(cfg)
         Thickness = 1,
     })
 
+    local windowGradient = make("UIGradient", window, {
+        Rotation = 118,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, P.bg),
+            ColorSequenceKeypoint.new(.38, Color3.fromRGB(9, 12, 26)),
+            ColorSequenceKeypoint.new(.72, Color3.fromRGB(10, 8, 25)),
+            ColorSequenceKeypoint.new(1, P.bg),
+        }),
+    })
+
+    local outerGlow = make("Frame", window, {
+        Name = "OuterGlow",
+        Position = UDim2.fromOffset(5, 5),
+        Size = UDim2.new(1, -10, 1, -10),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+
+    make("UIStroke", outerGlow, {
+        Color = P.accent2,
+        Thickness = 1,
+        Transparency = .82,
+    })
+
+    local innerGlow = make("Frame", window, {
+        Name = "InnerGlow",
+        Position = UDim2.fromOffset(10, 10),
+        Size = UDim2.new(1, -20, 1, -20),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    })
+
+    make("UIStroke", innerGlow, {
+        Color = P.accent,
+        Thickness = 1,
+        Transparency = .88,
+    })
+
     local scale = make("UIScale", window, {
         Scale = 1,
     })
@@ -168,11 +209,59 @@ function Library:CreateWindow(cfg)
         })
     end
 
-    -- Original architectural/gothic background geometry.
+    -- Layered celestial/prismatic background field.
     local art = make("Frame", window, {
-        Name = "GothicTracery",
+        Name = "SpectralField",
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
+    })
+
+    local glowA = make("Frame", art, {
+        Position = UDim2.fromOffset(535, -145),
+        Size = UDim2.fromOffset(380, 380),
+        BackgroundColor3 = P.accent2,
+        BackgroundTransparency = .95,
+        BorderSizePixel = 0,
+    })
+    make("UICorner", glowA, {CornerRadius = UDim.new(1, 0)})
+    make("UIGradient", glowA, {
+        Rotation = 35,
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, .82),
+            NumberSequenceKeypoint.new(.45, .92),
+            NumberSequenceKeypoint.new(1, 1),
+        }),
+    })
+
+    local glowB = make("Frame", art, {
+        Position = UDim2.fromOffset(-155, 265),
+        Size = UDim2.fromOffset(430, 430),
+        BackgroundColor3 = P.accent,
+        BackgroundTransparency = .96,
+        BorderSizePixel = 0,
+    })
+    make("UICorner", glowB, {CornerRadius = UDim.new(1, 0)})
+
+    local horizon = make("Frame", art, {
+        Position = UDim2.fromOffset(175, 74),
+        Size = UDim2.fromOffset(655, 2),
+        BackgroundColor3 = P.glow,
+        BackgroundTransparency = .82,
+        BorderSizePixel = 0,
+    })
+    make("UIGradient", horizon, {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, P.accent),
+            ColorSequenceKeypoint.new(.5, P.accent2),
+            ColorSequenceKeypoint.new(1, P.accent),
+        }),
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(.15, .2),
+            NumberSequenceKeypoint.new(.5, 0),
+            NumberSequenceKeypoint.new(.85, .2),
+            NumberSequenceKeypoint.new(1, 1),
+        }),
     })
 
     local function line(parent, x, y, w, h, angle, color, transparency)
@@ -318,13 +407,27 @@ function Library:CreateWindow(cfg)
         line(art, x + 9, 439, 1, 37, 0, P.line, .9)
     end
 
-    make("Frame", window, {
-        Name = "ContentVeil",
+    local contentVeil = make("Frame", window, {
+        Name = "ContentGlass",
         Position = UDim2.fromOffset(174, 12),
         Size = UDim2.fromOffset(662, 542),
-        BackgroundColor3 = P.bg,
-        BackgroundTransparency = .12,
+        BackgroundColor3 = P.card,
+        BackgroundTransparency = .42,
         BorderSizePixel = 0,
+    })
+
+    make("UIGradient", contentVeil, {
+        Rotation = 132,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(14, 20, 37)),
+            ColorSequenceKeypoint.new(.48, Color3.fromRGB(9, 12, 25)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 11, 32)),
+        }),
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, .08),
+            NumberSequenceKeypoint.new(.5, .3),
+            NumberSequenceKeypoint.new(1, .12),
+        }),
     })
 
     -- Inner content frame with clipped-corner illusion.
@@ -385,8 +488,15 @@ function Library:CreateWindow(cfg)
         Active = true,
     })
 
-    text(header, title, 25, 15, 144, 39, 32, P.text, Enum.Font.Antique)
-    text(window, subtitleText, 24, 57, 145, 24, 10, P.accent)
+    local titleGlow = text(header, title, 27, 17, 150, 39, 32, P.accent2, Enum.Font.Antique)
+    titleGlow.TextTransparency = .78
+
+    local titleLabel = text(header, title, 25, 15, 150, 39, 32, P.text, Enum.Font.Antique)
+    local subtitleLabel = text(window, subtitleText, 24, 57, 150, 24, 10, P.accent2)
+
+    local titleRail = line(window, 24, 86, 141, 1, 0, P.accent2, .55)
+    line(window, 24, 89, 87, 1, 0, P.accent, .78)
+    diamond(window, 156, 82, 7, P.glow, .42)
 
     local breadcrumb = text(
         header,
@@ -412,18 +522,50 @@ function Library:CreateWindow(cfg)
             Position = UDim2.fromOffset(x, y),
             Size = UDim2.fromOffset(width, 30),
             BackgroundColor3 = P.card,
-            BackgroundTransparency = .1,
+            BackgroundTransparency = .18,
             BorderSizePixel = 0,
             Font = Enum.Font.Code,
             TextSize = 12,
             TextColor3 = P.text,
-            AutoButtonColor = true,
+            AutoButtonColor = false,
         })
 
         make("UIStroke", object, {
-            Color = P.line,
+            Color = P.accent,
             Thickness = 1,
+            Transparency = .52,
         })
+
+        local buttonGradient = make("UIGradient", object, {
+            Rotation = 0,
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(18, 21, 40)),
+                ColorSequenceKeypoint.new(.55, Color3.fromRGB(12, 16, 31)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 13, 35)),
+            }),
+        })
+
+        local shimmer = make("Frame", object, {
+            Position = UDim2.fromOffset(1, 1),
+            Size = UDim2.new(1, -2, 0, 1),
+            BackgroundColor3 = P.glow,
+            BackgroundTransparency = .72,
+            BorderSizePixel = 0,
+        })
+
+        bind(object.MouseEnter, function()
+            TweenService:Create(object, TweenInfo.new(.16), {
+                BackgroundTransparency = .04,
+                TextColor3 = P.glow,
+            }):Play()
+        end)
+
+        bind(object.MouseLeave, function()
+            TweenService:Create(object, TweenInfo.new(.16), {
+                BackgroundTransparency = .18,
+                TextColor3 = P.text,
+            }):Play()
+        end)
 
         if callback then
             bind(object.Activated, callback)
@@ -523,8 +665,15 @@ function Library:CreateWindow(cfg)
             page.Visible = selected
 
             if nav[key] then
-                nav[key].TextColor3 = selected and P.bright or P.muted
-                nav[key].BackgroundTransparency = selected and 0 or .6
+                nav[key].TextColor3 = selected and P.glow or P.muted
+                nav[key].BackgroundTransparency = selected and .04 or .68
+
+                local strokeObject = nav[key]:FindFirstChildOfClass("UIStroke")
+                if strokeObject then
+                    strokeObject.Color = selected and P.accent2 or P.line
+                    strokeObject.Transparency = selected and .08 or .58
+                    strokeObject.Thickness = selected and 1.5 or 1
+                end
             end
         end
 
@@ -546,7 +695,7 @@ function Library:CreateWindow(cfg)
 
     local sidebarStatus = text(
         window,
-        "●  READY",
+        "◇  STABLE",
         24,
         398,
         142,
@@ -557,12 +706,12 @@ function Library:CreateWindow(cfg)
 
     local footerLabel = text(window, "", 191, 495, 626, 55, 11, P.muted)
 
-    local statusText = "READY"
+    local statusText = "STABLE"
     local footerPrimary = versionText
     local footerSecondary = ""
 
     local function updateFooter()
-        sidebarStatus.Text = "●  " .. tostring(statusText)
+        sidebarStatus.Text = "◇  " .. tostring(statusText)
         footerLabel.Text = string.format(
             "STATUS  %s    %s\n%s",
             tostring(statusText):sub(1, 24),
@@ -749,13 +898,46 @@ function Library:CreateWindow(cfg)
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = P.card,
-                BackgroundTransparency = .15,
+                BackgroundTransparency = .24,
                 BorderSizePixel = 0,
             })
 
             make("UIStroke", card, {
-                Color = P.line,
+                Color = P.accent,
                 Thickness = 1,
+                Transparency = .48,
+            })
+
+            make("UIGradient", card, {
+                Rotation = 112,
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(16, 22, 42)),
+                    ColorSequenceKeypoint.new(.52, Color3.fromRGB(10, 14, 28)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(21, 12, 37)),
+                }),
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, .05),
+                    NumberSequenceKeypoint.new(.58, .24),
+                    NumberSequenceKeypoint.new(1, .08),
+                }),
+            })
+
+            local cardBeam = make("Frame", card, {
+                Position = UDim2.fromOffset(0, 0),
+                Size = UDim2.new(1, 0, 0, 2),
+                BackgroundColor3 = P.accent2,
+                BackgroundTransparency = .48,
+                BorderSizePixel = 0,
+            })
+
+            make("UIGradient", cardBeam, {
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1),
+                    NumberSequenceKeypoint.new(.18, .05),
+                    NumberSequenceKeypoint.new(.5, .25),
+                    NumberSequenceKeypoint.new(.82, .05),
+                    NumberSequenceKeypoint.new(1, 1),
+                }),
             })
 
             -- Ornamental card joints and double-line header rail.
@@ -802,7 +984,7 @@ function Library:CreateWindow(cfg)
                 588,
                 22,
                 15,
-                P.bright,
+                P.glow,
                 Enum.Font.Antique
             )
             heading.Size = UDim2.new(1, 0, 0, 22)
@@ -1517,6 +1699,26 @@ function Library:CreateWindow(cfg)
     end)
 
     updateFooter()
+
+    -- Slow ambient light sweep; intentionally subtle and limited to a few elements.
+    task.spawn(function()
+        local direction = 1
+        while alive and task.wait(1.8) do
+            direction = -direction
+
+            TweenService:Create(windowGradient, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                Rotation = direction > 0 and 126 or 108,
+            }):Play()
+
+            TweenService:Create(horizon, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                BackgroundTransparency = direction > 0 and .72 or .88,
+            }):Play()
+
+            TweenService:Create(titleGlow, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                TextTransparency = direction > 0 and .68 or .84,
+            }):Play()
+        end
+    end)
 
     return Window
 end
