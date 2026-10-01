@@ -23,7 +23,7 @@ local function getColorPickerModule()
 
     local ok, result = pcall(function()
         local source = game:HttpGet(
-            "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/ColorPicker.lua?rev=961f1da"
+            "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/ColorPicker.lua?rev=ui-cleanup-20261001"
         )
         return loadstring(source)()
     end)
@@ -210,7 +210,7 @@ function Library:CreateWindow(cfg)
     local nav = {}
     local alive = true
     local activeTab = nil
-    local capturingKey = false
+    local capturingKey = nil
 
     local title = tostring(cfg.Title or "AETHER")
     local subtitleText = tostring(cfg.SubTitle or "S P E C T R A L")
@@ -218,8 +218,10 @@ function Library:CreateWindow(cfg)
     local currentPage = tostring(cfg.CurrentPage or "OVERVIEW")
     local versionText = tostring(cfg.Version or "UI LIBRARY")
 
-    local toggleKey = cfg.ToggleKey == false and nil or (cfg.ToggleKey or Enum.KeyCode.RightShift)
-    local unloadKey = cfg.UnloadKey == false and nil or (cfg.UnloadKey or Enum.KeyCode.F9)
+    local toggleKey = cfg.ToggleKey
+    if toggleKey == nil then toggleKey = Enum.KeyCode.RightShift end
+    local unloadKey = cfg.UnloadKey
+    if unloadKey == nil then unloadKey = Enum.KeyCode.F9 end
 
     local function bind(signal, callback)
         local connection = signal:Connect(callback)
@@ -434,6 +436,15 @@ function Library:CreateWindow(cfg)
         return node
     end
 
+    local function segment(parent, x0, y0, x1, y1, color, transparency, thickness)
+        local dx, dy = x1 - x0, y1 - y0
+        local length = math.sqrt(dx * dx + dy * dy)
+        local edge = line(parent, (x0 + x1) / 2, (y0 + y1) / 2,
+            length, thickness or 1, math.deg(math.atan2(dy, dx)), color, transparency)
+        edge.AnchorPoint = Vector2.new(.5, .5)
+        return edge
+    end
+
     local function orbitArc(parent, cx, cy, radius, startAngle, endAngle, segments, color, transparency, thickness)
         segments = math.max(4, segments or 18)
         local step = (endAngle - startAngle) / segments
@@ -445,21 +456,8 @@ function Library:CreateWindow(cfg)
             local y0 = cy + math.sin(a0) * radius
             local x1 = cx + math.cos(a1) * radius
             local y1 = cy + math.sin(a1) * radius
-            local dx = x1 - x0
-            local dy = y1 - y0
-            local length = math.sqrt(dx * dx + dy * dy)
-            local angle = math.deg(math.atan2(dy, dx))
-
-            line(
-                parent,
-                x0,
-                y0,
-                length + 1,
-                thickness or 1,
-                angle,
-                color or P.line,
-                transparency or .9
-            )
+            segment(parent, x0, y0, x1, y1, color or P.line,
+                transparency or .9, thickness or 1)
         end
     end
 
@@ -479,21 +477,8 @@ function Library:CreateWindow(cfg)
 
             if index > 1 and point[5] ~= false then
                 local previous = points[index - 1]
-                local dx = point[1] - previous[1]
-                local dy = point[2] - previous[2]
-                local length = math.sqrt(dx * dx + dy * dy)
-                local angle = math.deg(math.atan2(dy, dx))
-
-                line(
-                    parent,
-                    previous[1],
-                    previous[2],
-                    length,
-                    1,
-                    angle,
-                    color or P.line,
-                    transparency or .9
-                )
+                segment(parent, previous[1], previous[2], point[1], point[2],
+                    color or P.line, transparency or .9, 1)
             end
         end
     end
@@ -996,10 +981,6 @@ function Library:CreateWindow(cfg)
         end
     end
 
-    button(window, "×", 888, 18, 30, function()
-        Window:Destroy()
-    end)
-
     -- Original drag behavior.
     local drag
     local dragStart
@@ -1105,7 +1086,7 @@ function Library:CreateWindow(cfg)
         }),
     })
 
-    -- No pause button. Only unload and show/hide remain.
+    -- Keyboard shortcuts.
     text(
         window,
         "F9  unload\nRShift  hide",
@@ -1326,16 +1307,16 @@ function Library:CreateWindow(cfg)
             navCopy.TextTransparency = 0
         end
 
-        -- Sidebar tab ornament: rail, rune node, and trailing stitch.
+        -- Keep a quiet sidebar rail and reserve the remaining space for tab text.
         local navRail = line(navButton, 4, 6, 1, 18, 0, P.accent, #tabs == 0 and .05 or .62)
-        local navNode = diamond(navButton, 10, 11, 7, P.line, .2)
-        local navTail = line(navButton, 118, 15, 8, 1, 0, P.line, .55)
-        local navTailNode = diamond(navButton, 126, 12, 5, P.line, .45)
-
+ 
         navRail.ZIndex = 9
-        navNode.ZIndex = 9
-        navTail.ZIndex = 9
-        navTailNode.ZIndex = 9
+        if navCopy then
+            navCopy.Position = UDim2.fromOffset(12, 0)
+            navCopy.Size = UDim2.new(1, -20, 1, 0)
+            navCopy.TextXAlignment = Enum.TextXAlignment.Left
+            navCopy.TextTruncate = Enum.TextTruncate.AtEnd
+        end
 
         nav[name] = navButton
 
@@ -1374,33 +1355,33 @@ function Library:CreateWindow(cfg)
             if sideText == "right" or sideText == "2" then
                 sectionParent = rightColumn
                 sideName = "Right"
-                Tab._rightSections += 1
+                Tab._rightSections = Tab._rightSections + 1
             elseif sideText == "left" or sideText == "1" then
                 sectionParent = leftColumn
                 sideName = "Left"
-                Tab._leftSections += 1
+                Tab._leftSections = Tab._leftSections + 1
             elseif Tab._leftSections <= Tab._rightSections then
                 sectionParent = leftColumn
                 sideName = "Left"
-                Tab._leftSections += 1
+                Tab._leftSections = Tab._leftSections + 1
             else
                 sectionParent = rightColumn
                 sideName = "Right"
-                Tab._rightSections += 1
+                Tab._rightSections = Tab._rightSections + 1
             end
 
             local card = make("Frame", sectionParent, {
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = P.card,
-                BackgroundTransparency = .34,
+                BackgroundTransparency = .18,
                 BorderSizePixel = 0,
             })
 
             make("UIStroke", card, {
                 Color = P.line,
                 Thickness = 1,
-                Transparency = .18,
+                Transparency = .55,
             })
 
             make("UICorner", card, {
@@ -1410,9 +1391,9 @@ function Library:CreateWindow(cfg)
             make("UIGradient", card, {
                 Rotation = 112,
                 Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(16, 22, 42)),
-                    ColorSequenceKeypoint.new(.52, Color3.fromRGB(10, 14, 28)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(21, 12, 37)),
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 20, 23)),
+                    ColorSequenceKeypoint.new(.52, Color3.fromRGB(12, 12, 15)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 22, 26)),
                 }),
                 Transparency = NumberSequence.new({
                     NumberSequenceKeypoint.new(0, .05),
@@ -1420,10 +1401,6 @@ function Library:CreateWindow(cfg)
                     NumberSequenceKeypoint.new(1, .08),
                 }),
             })
-
-            -- Compact Linoria-like groupbox header.
-            line(card, 10, 29, 72, 1, 0, P.accent2, .62)
-            diamond(card, 5, 26, 6, P.accent, .34)
 
             make("UIPadding", card, {
                 PaddingTop = UDim.new(0, 10),
@@ -1492,6 +1469,8 @@ function Library:CreateWindow(cfg)
                     12,
                     Color3.fromRGB(255, 255, 255)
                 )
+
+                label.Size = UDim2.new(1, -94, 1, 0)
 
                 local switch = make("TextButton", row, {
                     AnchorPoint = Vector2.new(1, .5),
@@ -1565,6 +1544,8 @@ function Library:CreateWindow(cfg)
                     local available = unlocked()
                     stateLabel.Text = not available and "LOCK" or state and "ON" or "OFF"
                     stateLabel.TextColor3 = P.text
+                    stateLabel.Position = UDim2.fromOffset(state and 3 or 28, 0)
+                    stateLabel.Size = UDim2.fromOffset(49, 28)
 
                     local targetX = state and 57 or 5
                     local targetWidth = state and 76 or 40
@@ -1576,7 +1557,7 @@ function Library:CreateWindow(cfg)
                     TweenService:Create(fill, TweenInfo.new(.15, Enum.EasingStyle.Quad), {
                         Size = UDim2.new(0, targetWidth, 1, -6),
                         BackgroundColor3 = state and P.accent2 or P.accent,
-                        BackgroundTransparency = state and .08 or .42,
+                        BackgroundTransparency = state and .78 or .94,
                     }):Play()
 
                     switchStroke.Color = state and P.accent2 or P.line
@@ -1737,6 +1718,8 @@ function Library:CreateWindow(cfg)
                     12
                 )
 
+                label.Size = UDim2.new(1, -154, 1, 0)
+
                 local box = make("TextBox", row, {
                     Text = tostring(current),
                     PlaceholderText = tostring(control.Placeholder or ""),
@@ -1836,6 +1819,8 @@ function Library:CreateWindow(cfg)
                     12,
                     Color3.fromRGB(255, 255, 255)
                 )
+
+                label.Size = UDim2.new(1, -158, 1, 0)
 
                 local selector = make("TextButton", row, {
                     AnchorPoint = Vector2.new(1, .5),
@@ -2014,6 +1999,7 @@ function Library:CreateWindow(cfg)
                 local range = control.Range or {0, 100}
                 local minimum = tonumber(range[1]) or 0
                 local maximum = tonumber(range[2]) or 100
+                if minimum > maximum then minimum, maximum = maximum, minimum end
                 local step = tonumber(control.Increment) or 1
                 local suffix = tostring(control.Suffix or "")
                 local value = math.clamp(tonumber(control.Default) or minimum, minimum, maximum)
@@ -2044,6 +2030,9 @@ function Library:CreateWindow(cfg)
                     11,
                     Color3.fromRGB(255, 255, 255)
                 )
+                label.Size = UDim2.new(1, -100, 0, 21)
+                valueLabel.AnchorPoint = Vector2.new(1, 0)
+                valueLabel.Position = UDim2.new(1, 0, 0, 0)
                 valueLabel.TextXAlignment = Enum.TextXAlignment.Right
 
                 local track = make("Frame", holder, {
@@ -2202,6 +2191,8 @@ function Library:CreateWindow(cfg)
                     12
                 )
 
+                label.Size = UDim2.new(1, -92, 1, 0)
+
                 local keyButton = button(
                     row,
                     current.Name,
@@ -2216,7 +2207,10 @@ function Library:CreateWindow(cfg)
                 local Object = {}
 
                 bind(keyButton.Activated, function()
-                    capturingKey = true
+                    if capturingKey and capturingKey._cancelCapture then
+                        capturingKey._cancelCapture()
+                    end
+                    capturingKey = Object
                     keyButton.Text = "PRESS..."
                 end)
 
@@ -2235,8 +2229,13 @@ function Library:CreateWindow(cfg)
                     label.Text = value
                 end)
 
+                Object._cancelCapture = function()
+                    keyButton.Text = current.Name
+                    capturingKey = nil
+                end
+
                 Object._capture = function(input)
-                    if not capturingKey then
+                    if capturingKey ~= Object then
                         return false
                     end
 
@@ -2244,7 +2243,12 @@ function Library:CreateWindow(cfg)
                         return true
                     end
 
-                    capturingKey = false
+                    if input.KeyCode == Enum.KeyCode.Escape then
+                        Object._cancelCapture()
+                        return true
+                    end
+
+                    capturingKey = nil
                     current = input.KeyCode
                     Object.Value.Current = current
                     keyButton.Text = current.Name
@@ -2269,6 +2273,7 @@ function Library:CreateWindow(cfg)
                     P.muted
                 )
                 label.Size = UDim2.new(1, 0, 0, 28)
+                label.AutomaticSize = Enum.AutomaticSize.Y
 
                 local Object = {}
 
@@ -2397,10 +2402,13 @@ function Library:CreateWindow(cfg)
                     P.muted
                 )
 
+                label.Size = UDim2.new(1, 0, 0, 21)
+
                 local track = make("Frame", holder, {
                     Position = UDim2.new(0, 0, 1, -7),
                     Size = UDim2.new(1, 0, 0, 4),
                     BackgroundColor3 = P.line,
+                    BackgroundTransparency = .82,
                     BorderSizePixel = 0,
                 })
 
@@ -2692,3 +2700,4 @@ function Library:CreateWindow(cfg)
 end
 
 return Library
+
