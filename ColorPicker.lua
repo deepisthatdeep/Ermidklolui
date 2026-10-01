@@ -85,10 +85,10 @@ function Picker.Create(cfg)
     cfg = cfg or {}
 
     local parent = assert(cfg.Parent, "ColorPicker Parent is required")
-    local accent = cfg.Accent or Color3.fromRGB(176, 148, 255)
-    local accent2 = cfg.Accent2 or Color3.fromRGB(104, 224, 255)
-    local line = cfg.Line or Color3.fromRGB(70, 86, 138)
-    local initial = parseHex(cfg.Color) or Color3.fromRGB(176, 148, 255)
+    local accent = cfg.Accent or Color3.fromRGB(255, 255, 255)
+    local accent2 = cfg.Accent2 or Color3.fromRGB(255, 255, 255)
+    local line = cfg.Line or Color3.fromRGB(255, 255, 255)
+    local initial = parseHex(cfg.Color) or Color3.fromRGB(255, 255, 255)
 
     local connections = {}
     local alive = true
@@ -457,3 +457,4 @@ function Picker.Create(cfg)
 end
 
 return Picker
+
