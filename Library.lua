@@ -23,7 +23,7 @@ local function getColorPickerModule()
 
     local ok, result = pcall(function()
         local source = game:HttpGet(
-            "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/ColorPicker.lua?rev=ui-cleanup-20261001"
+            "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/ColorPicker.lua?rev=celestial-detail-20261001"
         )
         return loadstring(source)()
     end)
@@ -483,6 +483,48 @@ function Library:CreateWindow(cfg)
         end
     end
 
+    local function starburst(parent, x, y, radius, transparency)
+        local halo = ring(parent, x - radius, y - radius, radius * 2,
+            P.glow, math.min(.96, transparency + .28), 1)
+        halo.Name = "StarHalo"
+        segment(parent, x - radius, y, x + radius, y, P.glow, transparency, 1)
+        segment(parent, x, y - radius, x, y + radius, P.glow, transparency, 1)
+        diamond(parent, x - 2, y - 2, 4, P.bright, transparency * .6)
+    end
+
+    local function orbitDetails(parent, cx, cy, radius, count, startAngle, sweep)
+        for index = 0, count - 1 do
+            local angle = math.rad(startAngle + sweep * index / count)
+            local major = index % 4 == 0
+            local inner = radius - (major and 6 or 2)
+            segment(parent, cx + math.cos(angle) * inner, cy + math.sin(angle) * inner,
+                cx + math.cos(angle) * radius, cy + math.sin(angle) * radius,
+                P.line, major and .64 or .85, 1)
+            if major then
+                local outer = radius + 5
+                dot(parent, cx + math.cos(angle) * outer - 1,
+                    cy + math.sin(angle) * outer - 1, 2, P.glow, .58)
+            end
+        end
+    end
+
+    local function etchedStroke(parent, transparency)
+        local edge = make("UIStroke", parent, {
+            Color = P.line, Thickness = 1, Transparency = transparency or .45,
+        })
+        make("UIGradient", edge, {
+            Rotation = 35,
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, .08),
+                NumberSequenceKeypoint.new(.3, .66),
+                NumberSequenceKeypoint.new(.5, .22),
+                NumberSequenceKeypoint.new(.75, .72),
+                NumberSequenceKeypoint.new(1, .08),
+            }),
+        })
+        return edge
+    end
+
     -- Keep only quiet perimeter structure.
     for _, x in ipairs({8, 930}) do
         line(art, x, 8, 1, 594, 0, P.line, .2)
@@ -734,10 +776,33 @@ function Library:CreateWindow(cfg)
         dot(art, star[1], star[2], star[3], P.glow, .48)
     end
 
+    -- Engraved astronomical scales and focal stars, kept behind the controls.
+    orbitDetails(orbit, 117, 117, 109, 48, 0, 360)
+    orbitDetails(lowerHalo, 90, 82, 80, 32, 0, 360)
+    orbitDetails(art, 302, 181, 89, 28, 18, 280)
+    for _, star in ipairs({
+        {208, 96, 6}, {918, 154, 5}, {916, 352, 6},
+        {210, 461, 5}, {851, 550, 6}, {290, 550, 5},
+        {181, 482, 5}, {41, 466, 4},
+    }) do
+        starburst(art, star[1], star[2], star[3], .48)
+    end
+    constellation(art, {
+        {239, 555, 2}, {279, 549, 3}, {322, 560, 2},
+        {368, 552, 3}, {408, 562, 2},
+    }, P.line, .8)
+    constellation(art, {
+        {684, 558, 2}, {723, 549, 3}, {766, 560, 2},
+        {809, 552, 3}, {856, 558, 2},
+    }, P.line, .8)
+    for index = 0, 12 do
+        dot(art, 919, 199 + index * 9, index % 3 == 0 and 2 or 1, P.glow, .65)
+    end
+
     -- Footer rail remains as the only strong straight guide across the content.
-    line(art, 186, 488, 642, 1, 0, P.line, .55)
-    diamond(art, 505, 485, 7, P.accent, .22)
-    dot(art, 509, 512, 4, P.glow, .5)
+    line(art, 225, 550, 683, 1, 0, P.line, .84)
+    diamond(art, 562, 547, 6, P.accent, .35)
+    ring(art, 558, 543, 14, P.glow, .76, 1)
 
     local contentVeil = make("Frame", window, {
         Name = "ContentGlass",
@@ -866,10 +931,10 @@ function Library:CreateWindow(cfg)
             ZIndex = 8,
         })
 
-        local outline = make("UIStroke", object, {
-            Color = P.accent,
-            Thickness = 1,
-            Transparency = .46,
+        local outline = etchedStroke(object, .38)
+        make("UIGradient", object, {
+            Rotation = 90,
+            Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(155, 160, 172)),
         })
 
         make("UICorner", object, {
@@ -925,11 +990,12 @@ function Library:CreateWindow(cfg)
         end)
 
         bind(object.MouseLeave, function()
+            local selected = object:GetAttribute("Selected")
             TweenService:Create(object, TweenInfo.new(.14), {
-                BackgroundTransparency = .06,
+                BackgroundTransparency = selected == nil and .06 or (selected and .04 or .68),
             }):Play()
-            outline.Color = P.accent
-            outline.Transparency = .46
+            outline.Color = selected and P.accent2 or P.accent
+            outline.Transparency = selected and .08 or .46
             copyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         end)
 
@@ -1034,6 +1100,7 @@ function Library:CreateWindow(cfg)
             page.Visible = selected
 
             if nav[key] then
+                nav[key]:SetAttribute("Selected", selected)
                 nav[key].TextColor3 = Color3.fromRGB(255, 255, 255)
                 nav[key].BackgroundTransparency = selected and .04 or .68
 
@@ -1283,6 +1350,11 @@ function Library:CreateWindow(cfg)
             BorderSizePixel = 0,
         })
         splitLine.ZIndex = 2
+        for _, y in ipairs({12, 218, 424}) do
+            local node = diamond(page, columnWidth + math.floor(columnGap / 2) - 2,
+                y, 4, P.line, .64)
+            node.ZIndex = 2
+        end
 
         pages[name] = page
 
@@ -1297,6 +1369,7 @@ function Library:CreateWindow(cfg)
             end
         )
 
+        navButton:SetAttribute("Selected", #tabs == 0)
         navButton.Size = UDim2.fromOffset(156, 38)
         navButton.BackgroundTransparency = #tabs == 0 and .02 or .62
         navButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1378,11 +1451,7 @@ function Library:CreateWindow(cfg)
                 BorderSizePixel = 0,
             })
 
-            make("UIStroke", card, {
-                Color = P.line,
-                Thickness = 1,
-                Transparency = .55,
-            })
+            etchedStroke(card, .34)
 
             make("UICorner", card, {
                 CornerRadius = UDim.new(0, 3),
@@ -1514,6 +1583,11 @@ function Library:CreateWindow(cfg)
 
                 make("UICorner", knob, {
                     CornerRadius = UDim.new(1, 0),
+                })
+
+                make("UIGradient", knob, {
+                    Rotation = 90,
+                    Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(172, 178, 190)),
                 })
 
                 local knobStroke = make("UIStroke", knob, {
@@ -1736,6 +1810,11 @@ function Library:CreateWindow(cfg)
                     ClearTextOnFocus = false,
                 })
 
+                make("UICorner", box, {CornerRadius = UDim.new(0, 4)})
+                local inputEdge = etchedStroke(box, .6)
+                bind(box.Focused, function() inputEdge.Transparency = .12 end)
+                bind(box.FocusLost, function() inputEdge.Transparency = .6 end)
+
                 local Object = {}
 
                 local function normalize(value)
@@ -1844,11 +1923,7 @@ function Library:CreateWindow(cfg)
                     CornerRadius = UDim.new(0, 7),
                 })
 
-                local selectorStroke = make("UIStroke", selector, {
-                    Color = P.line,
-                    Thickness = 1,
-                    Transparency = .2,
-                })
+                local selectorStroke = etchedStroke(selector, .2)
 
                 local hexLabel = text(
                     selector,
@@ -2074,6 +2149,25 @@ function Library:CreateWindow(cfg)
                     Thickness = 2,
                     Transparency = .08,
                 })
+
+                for index = 0, 10 do
+                    make("Frame", track, {
+                        Name = "ScaleTick",
+                        AnchorPoint = Vector2.new(.5, 0),
+                        Position = UDim2.new(index / 10, 0, 1, 4),
+                        Size = UDim2.fromOffset(1, index % 5 == 0 and 4 or 2),
+                        BackgroundColor3 = P.line,
+                        BackgroundTransparency = index % 5 == 0 and .5 or .78,
+                        BorderSizePixel = 0,
+                    })
+                end
+                make("UIGradient", fill, {
+                    Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, .45),
+                        NumberSequenceKeypoint.new(1, .05),
+                    }),
+                })
+                ring(knob, -3, -3, 19, P.glow, .74, 1)
 
                 local Object = {}
                 local draggingSlider = false
