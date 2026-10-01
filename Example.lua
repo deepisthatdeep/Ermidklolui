@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=c122b9f"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=2145a15"
 ))()
 
 local Window = Library:CreateWindow({
@@ -230,6 +230,7 @@ local ColorRows = {
     {"Primary accent", "accent"},
     {"Secondary accent", "accent2"},
     {"Glow", "glow"},
+    {"Highlight text", "bright"},
     {"Text", "text"},
     {"Muted text", "muted"},
 }
