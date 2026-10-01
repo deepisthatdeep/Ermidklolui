@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=2a82130"
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua?rev=288182c"
 ))()
 
 local Window = Library:CreateWindow({
@@ -8,6 +8,8 @@ local Window = Library:CreateWindow({
     ProductName = "N/A",
     CurrentPage = "N/A",
     Version = "N/A",
+    PaletteFile = "GenericUI_palette_v2.json",
+    AutoLoadPalette = true,
 })
 
 local General = Window:CreateTab({
