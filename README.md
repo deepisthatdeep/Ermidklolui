@@ -337,6 +337,23 @@ Progress values are normalized from `0` to `1`.
 
 ---
 
+## Runtime color profiles
+
+The window includes runtime accent switching:
+
+```lua
+Window:SetColorway("Moon")
+Window:SetColorway("Aurora")
+Window:SetColorway("Rose")
+Window:SetColorway("Solar")
+Window:SetColorway("Ice")
+
+local nextName = Window:CycleColorway()
+Window:SetAmbientGlow(true)
+```
+
+The example includes a **Color Matrix** section under Settings with a profile selector, ambient-light toggle, and cycle button.
+
 ## Hotkeys
 
 - **RightShift** — hide/show the interface.
