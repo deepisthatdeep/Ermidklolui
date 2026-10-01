@@ -918,6 +918,13 @@ function Library:CreateWindow(cfg)
         alive = false
         safeCall(cfg.OnUnload)
 
+        if self._activeColorPicker then
+            pcall(function()
+                self._activeColorPicker:Destroy(true)
+            end)
+            self._activeColorPicker = nil
+        end
+
         for _, connection in ipairs(connections) do
             pcall(function()
                 connection:Disconnect()
