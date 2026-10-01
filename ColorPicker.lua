@@ -60,6 +60,7 @@ local function stroke(parent, color, transparency, thickness)
         Color = color,
         Transparency = transparency or 0,
         Thickness = thickness or 1,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
     })
 end
 
@@ -92,8 +93,8 @@ function Picker.Create(cfg)
 
     local connections = {}
     local alive = true
-    local draggingSV = false
-    local draggingHue = false
+    local dragInput
+    local dragKind
 
     local hue, saturation, value = Color3.toHSV(initial)
     local draft = initial
@@ -104,8 +105,12 @@ function Picker.Create(cfg)
         return connection
     end
 
-    local overlay = new("Frame", parent, {
+    local overlay = new("TextButton", parent, {
         Name = "PalettePickerOverlay",
+        Text = "",
+        AutoButtonColor = false,
+        Active = true,
+        Modal = true,
         Size = UDim2.fromScale(1, 1),
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
         BackgroundTransparency = .52,
@@ -284,6 +289,21 @@ function Picker.Create(cfg)
     round(hueCursor, 4)
     stroke(hueCursor, Color3.fromRGB(0, 0, 0), .22, 1)
 
+    -- Dedicated hit targets sit above all gradient layers and cursors.
+    local svHit = new("TextButton", svSquare, {
+        Name = "SaturationValueHitTarget",
+        Size = UDim2.fromScale(1, 1),
+        Text = "", BackgroundTransparency = 1, BorderSizePixel = 0,
+        AutoButtonColor = false, Active = true, ZIndex = 108,
+    })
+    local hueHit = new("TextButton", hueBar, {
+        Name = "HueHitTarget",
+        Position = UDim2.fromOffset(0, -6),
+        Size = UDim2.new(1, 0, 1, 12),
+        Text = "", BackgroundTransparency = 1, BorderSizePixel = 0,
+        AutoButtonColor = false, Active = true, ZIndex = 108,
+    })
+
     local preview = new("Frame", popup, {
         Position = UDim2.fromOffset(16, 253),
         Size = UDim2.fromOffset(109, 39),
@@ -315,7 +335,7 @@ function Picker.Create(cfg)
     local selectButton = new("TextButton", popup, {
         Position = UDim2.fromOffset(16, 305),
         Size = UDim2.fromOffset(316, 42),
-        BackgroundColor3 = accent2,
+        BackgroundColor3 = Color3.fromRGB(12, 16, 30),
         BackgroundTransparency = .13,
         BorderSizePixel = 0,
         Text = "SELECT",
@@ -328,7 +348,7 @@ function Picker.Create(cfg)
         ZIndex = 103,
     })
     round(selectButton, 7)
-    stroke(selectButton, Color3.fromRGB(255, 255, 255), .62, 1)
+    stroke(selectButton, accent2, .35, 1)
 
     local function render()
         draft = Color3.fromHSV(hue, saturation, value)
@@ -388,6 +408,7 @@ function Picker.Create(cfg)
         end
 
         alive = false
+        dragInput, dragKind = nil, nil
 
         for _, connection in ipairs(connections) do
             pcall(function()
@@ -402,7 +423,8 @@ function Picker.Create(cfg)
         end
 
         if cancelled and typeof(cfg.OnCancel) == "function" then
-            task.spawn(cfg.OnCancel)
+            local ok, err = pcall(cfg.OnCancel)
+            if not ok then warn("[ColorPicker] cancel callback:", err) end
         end
     end
 
@@ -419,51 +441,46 @@ function Picker.Create(cfg)
     end)
 
     bind(selectButton.Activated, function()
-        if typeof(cfg.OnSelect) == "function" then
-            task.spawn(cfg.OnSelect, draft, hex(draft))
-        end
+        if not alive then return end
+        -- Commit the entered hex even if FocusLost has not fired yet.
+        local selected = parseHex(hexBox.Text) or draft
         Object:Destroy(false)
-    end)
-
-    bind(svSquare.InputBegan, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch then
-            draggingSV = true
-            fromSV(input)
+        if typeof(cfg.OnSelect) == "function" then
+            local ok, err = pcall(cfg.OnSelect, selected, hex(selected))
+            if not ok then warn("[ColorPicker] select callback:", err) end
         end
     end)
 
-    bind(hueBar.InputBegan, function(input)
+    local function beginDrag(kind, input)
+        if not alive then return end
         if input.UserInputType == Enum.UserInputType.MouseButton1
             or input.UserInputType == Enum.UserInputType.Touch then
-            draggingHue = true
-            fromHue(input)
+            dragInput, dragKind = input, kind
+            if kind == "sv" then fromSV(input) else fromHue(input) end
         end
-    end)
+    end
+    bind(svHit.InputBegan, function(input) beginDrag("sv", input) end)
+    bind(hueHit.InputBegan, function(input) beginDrag("hue", input) end)
 
     bind(UserInputService.InputChanged, function(input)
-        if draggingSV and (
-            input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch
-        ) then
-            fromSV(input)
-        elseif draggingHue and (
-            input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch
-        ) then
-            fromHue(input)
+        if not alive or not dragInput then return end
+        local mouse = dragInput.UserInputType == Enum.UserInputType.MouseButton1
+            and input.UserInputType == Enum.UserInputType.MouseMovement
+        if input == dragInput or mouse then
+            if dragKind == "sv" then fromSV(input) else fromHue(input) end
         end
     end)
 
     bind(UserInputService.InputEnded, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch then
-            draggingSV = false
-            draggingHue = false
+        if input == dragInput or (dragInput
+            and dragInput.UserInputType == Enum.UserInputType.MouseButton1
+            and input.UserInputType == Enum.UserInputType.MouseButton1) then
+            dragInput, dragKind = nil, nil
         end
     end)
 
     bind(hexBox.FocusLost, function()
+        if not alive then return end
         local parsed = parseHex(hexBox.Text)
         if parsed then
             draft = parsed
