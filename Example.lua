@@ -4,93 +4,90 @@ local Library = loadstring(game:HttpGet(
 
 local Window = Library:CreateWindow({
     Title = "INTERFACE",
-    SubTitle = "UNIVERSAL INTERFACE",
+    SubTitle = "U N I V E R S A L",
+    ProductName = "SYSTEM",
+    CurrentPage = "MAIN",
     Version = "EXAMPLE BUILD",
-    Theme = "Default",
 })
 
 local Main = Window:CreateTab({
     Title = "Main",
     Index = 1,
-    Description = "Primary script controls and live state",
 })
 
 local Combat = Window:CreateTab({
     Title = "Combat",
     Index = 2,
-    Description = "Combat-related options for your script",
 })
 
-local Visuals = Window:CreateTab({
-    Title = "Visuals",
+local Automation = Window:CreateTab({
+    Title = "Automation",
     Index = 3,
-    Description = "Visual overlays and display preferences",
+})
+
+local Targeting = Window:CreateTab({
+    Title = "Targeting",
+    Index = 4,
+})
+
+local Vision = Window:CreateTab({
+    Title = "Vision",
+    Index = 5,
 })
 
 local Settings = Window:CreateTab({
     Title = "Settings",
-    Index = 4,
-    Description = "Configuration, keybinds, and diagnostics",
+    Index = 6,
 })
 
 local General = Main:CreateSection({
     Title = "General",
-    Description = "Every control is callback-driven, so this library can be used by any script.",
+    Level = 1,
+    Description = "Primary controls using the original gothic card layout.",
 })
 
 General:CreateToggle({
     Title = "Enabled",
     Default = true,
     Callback = function(value)
-        Window:SetStatus(value and "ACTIVE" or "IDLE")
+        Window:SetStatus(value and "READY" or "IDLE")
         print("Enabled:", value)
     end,
 })
 
 General:CreateSlider({
-    Title = "Speed",
+    Title = "Intensity",
     Range = {0, 100},
     Default = 50,
     Increment = 1,
     Suffix = "%",
     Callback = function(value)
-        print("Speed:", value)
+        print("Intensity:", value)
     end,
 })
 
 General:CreateDropdown({
     Title = "Mode",
-    Options = {"Balanced", "Aggressive", "Safe"},
+    Options = {"Balanced", "Fast", "Safe"},
     Selected = {"Balanced"},
     Callback = function(selected)
         print("Mode:", selected[1])
     end,
 })
 
-local Status = Main:CreateSection({
+local Runtime = Main:CreateSection({
     Title = "Runtime",
-    Description = "Labels, progress bars, paragraphs, and notifications are available for live script state.",
+    Description = "Status text, progress, notifications, and actions.",
 })
 
-local RuntimeLabel = Status:CreateLabel("Runtime: ready")
+local RuntimeLabel = Runtime:CreateLabel("Runtime: ready")
 
-local Progress = Status:CreateProgress({
+local Progress = Runtime:CreateProgress({
     Title = "Task progress",
     Default = 0.35,
 })
 
-Status:CreateButton({
-    Title = "Demo notification",
-    Callback = function()
-        Window:Notify({
-            Title = "UI Library",
-            Content = "This notification works from any script callback.",
-            Duration = 3,
-        })
-    end,
-})
-
-Status:CreateButton({
+Runtime:CreateButton({
     Title = "Advance progress",
     Callback = function()
         local nextValue = math.clamp(Progress.Value:Get() + 0.1, 0, 1)
@@ -99,10 +96,21 @@ Status:CreateButton({
     end,
 })
 
+Runtime:CreateButton({
+    Title = "Show notification",
+    Callback = function()
+        Window:Notify({
+            Title = "Notice",
+            Content = "This notification uses the same dark bordered style.",
+            Duration = 3,
+        })
+    end,
+})
+
 local CombatSection = Combat:CreateSection({
     Title = "Combat controls",
     Level = 1,
-    Description = "These are only UI examples. Connect the callbacks to your own logic.",
+    Description = "UI-only example controls. Connect callbacks to your own code.",
 })
 
 CombatSection:CreateToggle({
@@ -124,7 +132,9 @@ CombatSection:CreateInput({
     end,
 })
 
-CombatSection:CreateSeparator({Title = "Advanced"})
+CombatSection:CreateSeparator({
+    Title = "Advanced",
+})
 
 CombatSection:CreateDropdown({
     Title = "Targets",
@@ -132,51 +142,90 @@ CombatSection:CreateDropdown({
     Selected = {"Players", "NPCs"},
     Multi = true,
     Callback = function(selected)
-        print("Selected targets:", table.concat(selected, ", "))
+        print("Selected:", table.concat(selected, ", "))
     end,
 })
 
-local VisualSection = Visuals:CreateSection({
-    Title = "Overlay",
-    Description = "The default theme uses a dark purple/cyan palette with a clean modular card layout.",
+local AutomationSection = Automation:CreateSection({
+    Title = "Automation",
+    Description = "Example automation controls only.",
 })
 
-VisualSection:CreateToggle({
+AutomationSection:CreateToggle({
+    Title = "Automatic action",
+    Default = false,
+    Callback = function(value)
+        print("Automatic action:", value)
+    end,
+})
+
+AutomationSection:CreateSlider({
+    Title = "Delay",
+    Range = {0, 2},
+    Default = 0.2,
+    Increment = 0.05,
+    Suffix = "s",
+    Callback = function(value)
+        print("Delay:", value)
+    end,
+})
+
+local TargetSection = Targeting:CreateSection({
+    Title = "Selection",
+    Description = "Target and filtering UI examples.",
+})
+
+TargetSection:CreateDropdown({
+    Title = "Priority",
+    Options = {"Distance", "FOV", "Manual"},
+    Selected = {"Distance"},
+    Callback = function(selected)
+        print("Priority:", selected[1])
+    end,
+})
+
+TargetSection:CreateInput({
+    Title = "Maximum distance",
+    Default = 160,
+    Numeric = true,
+    Min = 0,
+    Max = 1000,
+    Callback = function(value)
+        print("Maximum distance:", value)
+    end,
+})
+
+local VisionSection = Vision:CreateSection({
+    Title = "Display",
+    Description = "Visual settings and status display.",
+})
+
+VisionSection:CreateToggle({
     Title = "Show overlay",
     Default = true,
     Callback = function(value)
-        print("Overlay:", value)
+        print("Show overlay:", value)
     end,
 })
 
-VisualSection:CreateSlider({
-    Title = "Opacity",
-    Range = {0, 1},
-    Default = 0.8,
-    Increment = 0.05,
-    Callback = function(value)
-        print("Opacity:", value)
-    end,
-})
-
-VisualSection:CreateParagraph({
+VisionSection:CreateParagraph({
     Title = "Design",
-    Content = "The background is built entirely with native Roblox UI: layered gradients, architectural grid lines, diagonal accent streaks, ornamental tracery, and accent nodes.",
+    Content = "The window uses the original purple palette, gothic tracery, Antique headings, thin card borders, and fixed sidebar geometry.",
 })
 
-local Config = Settings:CreateSection({
+local SettingsSection = Settings:CreateSection({
     Title = "Configuration",
 })
 
-Config:CreateKeybind({
+SettingsSection:CreateKeybind({
     Title = "Example keybind",
     Default = Enum.KeyCode.K,
     Callback = function(key)
-        print("New key:", key.Name)
+        print("Keybind:", key.Name)
     end,
 })
 
-Config:CreateInput({
+SettingsSection:CreateInput({
     Title = "Profile name",
     Default = "Default",
     Placeholder = "Profile",
@@ -185,20 +234,18 @@ Config:CreateInput({
     end,
 })
 
-Config:CreateButton({
+SettingsSection:CreateButton({
     Title = "Save settings",
     Callback = function()
         Window:SetStatus("SAVED")
-        Window:Notify({
-            Title = "Settings",
-            Content = "Example save callback fired.",
-        })
+        Window:SetFooter("EXAMPLE BUILD", "Settings callback fired")
     end,
 })
 
-Config:CreateParagraph({
-    Title = "Global window hotkeys",
-    Content = "RightShift toggles visibility. F9 unloads the UI. There is no pause system.",
+SettingsSection:CreateParagraph({
+    Title = "Hotkeys",
+    Content = "F9 unloads the interface. RightShift hides or shows it. There is no pause control.",
 })
 
 Window:SetStatus("READY")
+Window:SetFooter("EXAMPLE BUILD", "Universal UI library loaded")
