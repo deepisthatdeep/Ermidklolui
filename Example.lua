@@ -1,12 +1,12 @@
-local Leech = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Leech.lua"
+local Library = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/deepisthatdeep/Ermidklolui/main/Library.lua"
 ))()
 
-local Window = Leech:CreateWindow({
-    Title = "LEECH",
+local Window = Library:CreateWindow({
+    Title = "INTERFACE",
     SubTitle = "UNIVERSAL INTERFACE",
     Version = "EXAMPLE BUILD",
-    Theme = "LeechRain",
+    Theme = "Default",
 })
 
 local Main = Window:CreateTab({
@@ -83,7 +83,7 @@ Status:CreateButton({
     Title = "Demo notification",
     Callback = function()
         Window:Notify({
-            Title = "Leech UI",
+            Title = "UI Library",
             Content = "This notification works from any script callback.",
             Duration = 3,
         })
@@ -138,7 +138,7 @@ CombatSection:CreateDropdown({
 
 local VisualSection = Visuals:CreateSection({
     Title = "Overlay",
-    Description = "The default theme blends Leech purple with Project Rain's clean card layout.",
+    Description = "The default theme uses a dark purple/cyan palette with a clean modular card layout.",
 })
 
 VisualSection:CreateToggle({
@@ -161,7 +161,7 @@ VisualSection:CreateSlider({
 
 VisualSection:CreateParagraph({
     Title = "Design",
-    Content = "The background is built entirely with native Roblox UI: layered gradients, architectural grid lines, diagonal rain streaks, Leech tracery, and accent nodes.",
+    Content = "The background is built entirely with native Roblox UI: layered gradients, architectural grid lines, diagonal accent streaks, ornamental tracery, and accent nodes.",
 })
 
 local Config = Settings:CreateSection({
