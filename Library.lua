@@ -306,7 +306,7 @@ function Library:CreateWindow(cfg)
             BackgroundTransparency = 1,
             TextColor3 = color or P.text,
             TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-            TextStrokeTransparency = .42,
+            TextStrokeTransparency = .22,
             Font = font or Enum.Font.Code,
             TextSize = size or 12,
             TextWrapped = true,
@@ -819,74 +819,86 @@ function Library:CreateWindow(cfg)
     local function button(parent, buttonTitle, x, y, width, callback)
         local object = make("TextButton", parent, {
             Text = tostring(buttonTitle or ""),
+            TextTransparency = 1,
             Position = UDim2.fromOffset(x, y),
             Size = UDim2.fromOffset(width, 30),
-            BackgroundColor3 = P.card,
-            BackgroundTransparency = .18,
+            BackgroundColor3 = Color3.fromRGB(12, 16, 31),
+            BackgroundTransparency = .06,
             BorderSizePixel = 0,
             Font = Enum.Font.Code,
             TextSize = 12,
-            TextColor3 = P.text,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
             TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-            TextStrokeTransparency = .38,
+            TextStrokeTransparency = .25,
             AutoButtonColor = false,
             ZIndex = 8,
         })
 
-        make("UIStroke", object, {
+        local outline = make("UIStroke", object, {
             Color = P.accent,
             Thickness = 1,
-            Transparency = .52,
+            Transparency = .46,
         })
 
         make("UICorner", object, {
             CornerRadius = UDim.new(0, 7),
         })
 
-        local buttonUnderlay = make("Frame", object, {
-            Name = "ButtonUnderlay",
-            Position = UDim2.fromOffset(1, 1),
-            Size = UDim2.new(1, -2, 1, -2),
-            BackgroundColor3 = Color3.fromRGB(12, 16, 31),
-            BackgroundTransparency = .16,
-            BorderSizePixel = 0,
-            ZIndex = math.max(1, object.ZIndex - 1),
+        -- Render button copy in its own label. This prevents gradients, decorative
+        -- children, or Roblox TextButton draw-order quirks from darkening the text.
+        local copyLabel = make("TextLabel", object, {
+            Name = "ButtonText",
+            Position = UDim2.fromOffset(8, 0),
+            Size = UDim2.new(1, -16, 1, 0),
+            BackgroundTransparency = 1,
+            Text = object.Text,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+            TextStrokeTransparency = .22,
+            Font = Enum.Font.Code,
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            TextYAlignment = Enum.TextYAlignment.Center,
+            ZIndex = 20,
         })
 
-        make("UICorner", buttonUnderlay, {
-            CornerRadius = UDim.new(0, 6),
-        })
-
-        make("UIGradient", buttonUnderlay, {
-            Rotation = 0,
-            Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 26, 48)),
-                ColorSequenceKeypoint.new(.55, Color3.fromRGB(11, 15, 30)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(23, 14, 39)),
-            }),
-        })
-
-        local shimmer = make("Frame", object, {
-            Position = UDim2.fromOffset(1, 1),
-            Size = UDim2.new(1, -2, 0, 1),
+        local topHighlight = make("Frame", object, {
+            Position = UDim2.fromOffset(6, 2),
+            Size = UDim2.new(1, -12, 0, 1),
             BackgroundColor3 = P.glow,
-            BackgroundTransparency = .72,
+            BackgroundTransparency = .78,
             BorderSizePixel = 0,
-            ZIndex = 7,
+            ZIndex = 9,
         })
+
+        bind(object:GetPropertyChangedSignal("Text"), function()
+            copyLabel.Text = object.Text
+        end)
+
+        bind(object:GetPropertyChangedSignal("TextColor3"), function()
+            local color = object.TextColor3
+            local luminance = color.R * .2126 + color.G * .7152 + color.B * .0722
+            copyLabel.TextColor3 = luminance < .58
+                and Color3.fromRGB(255, 255, 255)
+                or color
+        end)
 
         bind(object.MouseEnter, function()
-            TweenService:Create(object, TweenInfo.new(.16), {
-                BackgroundTransparency = .04,
-                TextColor3 = P.text,
+            TweenService:Create(object, TweenInfo.new(.14), {
+                BackgroundTransparency = 0,
             }):Play()
+            outline.Color = P.accent2
+            outline.Transparency = .08
+            copyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         end)
 
         bind(object.MouseLeave, function()
-            TweenService:Create(object, TweenInfo.new(.16), {
-                BackgroundTransparency = .18,
-                TextColor3 = P.text,
+            TweenService:Create(object, TweenInfo.new(.14), {
+                BackgroundTransparency = .06,
             }):Play()
+            outline.Color = P.accent
+            outline.Transparency = .46
+            copyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         end)
 
         if callback then
@@ -996,6 +1008,12 @@ function Library:CreateWindow(cfg)
             if nav[key] then
                 nav[key].TextColor3 = Color3.fromRGB(255, 255, 255)
                 nav[key].BackgroundTransparency = selected and .04 or .68
+
+                local visibleText = nav[key]:FindFirstChild("ButtonText")
+                if visibleText then
+                    visibleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    visibleText.TextTransparency = 0
+                end
 
                 local strokeObject = nav[key]:FindFirstChildOfClass("UIStroke")
                 if strokeObject then
@@ -1227,11 +1245,22 @@ function Library:CreateWindow(cfg)
         navButton.BackgroundTransparency = #tabs == 0 and .02 or .62
         navButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
+        local navCopy = navButton:FindFirstChild("ButtonText")
+        if navCopy then
+            navCopy.TextColor3 = Color3.fromRGB(255, 255, 255)
+            navCopy.TextTransparency = 0
+        end
+
         -- Sidebar tab ornament: rail, rune node, and trailing stitch.
-        line(navButton, 4, 6, 1, 18, 0, P.accent, #tabs == 0 and .05 or .62)
-        diamond(navButton, 10, 11, 7, P.line, .2)
-        line(navButton, 118, 15, 8, 1, 0, P.line, .55)
-        diamond(navButton, 126, 12, 5, P.line, .45)
+        local navRail = line(navButton, 4, 6, 1, 18, 0, P.accent, #tabs == 0 and .05 or .62)
+        local navNode = diamond(navButton, 10, 11, 7, P.line, .2)
+        local navTail = line(navButton, 118, 15, 8, 1, 0, P.line, .55)
+        local navTailNode = diamond(navButton, 126, 12, 5, P.line, .45)
+
+        navRail.ZIndex = 9
+        navNode.ZIndex = 9
+        navTail.ZIndex = 9
+        navTailNode.ZIndex = 9
 
         nav[name] = navButton
 
