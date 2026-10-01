@@ -1294,8 +1294,12 @@ function Library:CreateWindow(cfg)
         function Tab:CreateSection(secCfg)
             secCfg = secCfg or {}
 
-            local sectionTitle = tostring(secCfg.Title or "Section")
-            if secCfg.Level ~= nil then
+            -- Section titles are optional. Empty/false titles create clean unlabeled groupboxes.
+            local sectionTitle = ""
+            if secCfg.Title ~= nil and secCfg.Title ~= false then
+                sectionTitle = tostring(secCfg.Title)
+            end
+            if sectionTitle ~= "" and secCfg.Level ~= nil then
                 sectionTitle = sectionTitle .. " · Level " .. tostring(secCfg.Level)
             end
 
@@ -1370,18 +1374,20 @@ function Library:CreateWindow(cfg)
                 SortOrder = Enum.SortOrder.LayoutOrder,
             })
 
-            local heading = text(
-                card,
-                string.upper(sectionTitle),
-                0,
-                0,
-                588,
-                22,
-                12,
-                P.bright,
-                Enum.Font.Code
-            )
-            heading.Size = UDim2.new(1, 0, 0, 22)
+            if sectionTitle ~= "" then
+                local heading = text(
+                    card,
+                    string.upper(sectionTitle),
+                    0,
+                    0,
+                    588,
+                    22,
+                    12,
+                    P.bright,
+                    Enum.Font.Code
+                )
+                heading.Size = UDim2.new(1, 0, 0, 22)
+            end
 
             if secCfg.Description and tostring(secCfg.Description) ~= "" then
                 local hint = text(
