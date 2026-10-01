@@ -1905,8 +1905,14 @@ function Library:CreateWindow(cfg)
             function Section:CreateColorInput(control)
                 control = control or {}
 
-                local paletteKey = control.PaletteKey
-                if P[paletteKey] == nil then paletteKey = nil end
+                local paletteKeys = {}
+                local requestedKeys = control.PaletteKeys or {control.PaletteKey}
+                if type(requestedKeys) == "table" then
+                    for _, key in ipairs(requestedKeys) do
+                        if P[key] ~= nil then table.insert(paletteKeys, key) end
+                    end
+                end
+                local paletteKey = paletteKeys[1]
                 local current = paletteKey and P[paletteKey] or hexToColor(control.Default) or control.Default
                 local ownedPicker
                 if typeof(current) ~= "Color3" then
@@ -2009,7 +2015,11 @@ function Library:CreateWindow(cfg)
                     render()
 
                     if fire then
-                        if paletteKey then Window:SetPaletteColor(paletteKey, current) end
+                        if paletteKey then
+                            local colors = {}
+                            for _, key in ipairs(paletteKeys) do colors[key] = current end
+                            Window:SetPaletteColors(colors)
+                        end
                         safeCall(control.Callback, current, colorToHex(current))
                     end
 
@@ -2608,24 +2618,31 @@ function Library:CreateWindow(cfg)
         return Tab
     end
 
+    function Window:SetPaletteColors(colors)
+        if type(colors) ~= "table" then return false, "Expected palette colors" end
+        local parsed = {}
+        for key, value in pairs(colors) do
+            if P[key] == nil then return false, "Unknown palette key: " .. tostring(key) end
+            parsed[key] = hexToColor(value)
+            if not parsed[key] then return false, "Invalid color for " .. tostring(key) end
+        end
+        -- Validate the entire group before changing anything, then repaint once.
+        for key, value in pairs(parsed) do P[key] = value end
+        refreshPalette()
+        for key, value in pairs(parsed) do
+            for _, control in ipairs(paletteControls[key] or {}) do
+                control:SetColor(value, false)
+            end
+        end
+        return true, parsed
+    end
+
     function Window:SetPaletteColor(key, value)
         key = tostring(key or "")
-        if P[key] == nil then
-            return false, "Unknown palette key: " .. key
-        end
-
-        local parsed = hexToColor(value)
-        if not parsed then
-            return false, "Invalid color"
-        end
-
-        P[key] = parsed
-        refreshPalette()
-        for _, control in ipairs(paletteControls[key] or {}) do
-            control:SetColor(parsed, false)
-        end
-
-        return true, parsed
+        if value == nil then return false, "Invalid color" end
+        local ok, result = self:SetPaletteColors({[key] = value})
+        if not ok then return false, result end
+        return true, result[key]
     end
 
     function Window:GetPaletteColor(key)
@@ -2675,17 +2692,11 @@ function Library:CreateWindow(cfg)
             return false, "No saved palette found"
         end
 
-        for key, value in pairs(saved) do
-            self:SetPaletteColor(key, value)
-        end
-
-        return true
+        return self:SetPaletteColors(saved)
     end
 
     function Window:ResetPalette()
-        for key, value in pairs(DefaultPalette) do
-            self:SetPaletteColor(key, value)
-        end
+        self:SetPaletteColors(DefaultPalette)
         return self:GetPalette()
     end
 
