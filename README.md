@@ -337,22 +337,58 @@ Progress values are normalized from `0` to `1`.
 
 ---
 
-## Runtime color profiles
+## Manual color editor
 
-The window includes runtime accent switching:
+The Settings page includes a **Color Matrix** section that lets you edit every palette channel individually with hex values:
+
+- Background
+- Panel
+- Border
+- Primary accent
+- Secondary accent
+- Glow
+- Highlight text
+- Text
+- Muted text
+
+The library exposes the same controls programmatically:
 
 ```lua
-Window:SetColorway("Moon")
-Window:SetColorway("Aurora")
-Window:SetColorway("Rose")
-Window:SetColorway("Solar")
-Window:SetColorway("Ice")
+Window:SetPaletteColor("accent", "#B094FF")
+Window:SetPaletteColor("accent2", "#68E0FF")
+Window:SetPaletteColor("bg", "#04060E")
 
-local nextName = Window:CycleColorway()
-Window:SetAmbientGlow(true)
+print(Window:GetPaletteColor("accent"))
+
+local allColors = Window:GetPalette()
+local allHex = Window:GetPaletteHex()
 ```
 
-The example includes a **Color Matrix** section under Settings with a profile selector, ambient-light toggle, and cycle button.
+### Save / load
+
+```lua
+local ok, result = Window:SavePalette()
+local ok2, result2 = Window:LoadPalette()
+Window:ResetPalette()
+```
+
+Saved colors use executor file APIs and are automatically restored on the next launch when supported. The default file is `Ermidklolui_palette.json`. Set `AutoLoadPalette = false` or provide `PaletteFile = "your_file.json"` in `CreateWindow` if you want different behavior.
+
+### Color input component
+
+```lua
+local Accent = Section:CreateColorInput({
+    Title = "Primary accent",
+    Default = Window:GetPaletteColor("accent"),
+    Callback = function(color, hex)
+        Window:SetPaletteColor("accent", color)
+        print(hex)
+    end,
+})
+
+Accent:SetHex("#FF80D5")
+print(Accent:GetHex())
+```
 
 ## Hotkeys
 
